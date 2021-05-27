@@ -6,7 +6,7 @@ services:
     build:
       context: .
       args:
-        IMAGE: nvidia/cuda:11.3.0-cudnn8-devel-ubuntu18.04
+        IMAGE: continuumio/miniconda
     ports:
       - "1234:22"
     volumes:
