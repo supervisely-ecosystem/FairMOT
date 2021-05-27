@@ -1,6 +1,10 @@
 ARG IMAGE
 FROM $IMAGE
 
+# install pytorch ...
+#RUN pip install abc...
+#RUN ...
+
 RUN apt-get update && apt-get install -y openssh-server
 EXPOSE 22
 
