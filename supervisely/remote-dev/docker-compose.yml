@@ -1,6 +1,6 @@
 version: "2.2"
 services:
-  devssh:
+  fairmot:
     shm_size: '2gb'
     runtime: nvidia
     build:
