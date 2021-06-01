@@ -97,6 +97,7 @@ RUN pip install torch==1.7.0+cu110 torchvision==0.8.1+cu110 torchaudio==0.7.0 -f
 # RUN cd DCNv2 && ./make.sh
 
 RUN python /FairMOT/src/gen_labels_20.py 
+RUN pip install -r /FairMOT/requirements.txt 
 
 
 
