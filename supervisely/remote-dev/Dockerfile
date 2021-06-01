@@ -7,6 +7,25 @@ EXPOSE 22
 RUN apt-get install -y sudo
 RUN mkdir -p /run/sshd
 
+
+
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        git \
+        curl \
+        nano \
+        unzip \
+        ca-certificates\
+        libjpeg-dev \
+        libpng-dev \
+        software-properties-common \
+    && apt-get -qq -y autoremove \
+    && apt-get autoclean \
+    && rm -rf /var/lib/apt/lists/* /var/log/dpkg.log
+
+
 RUN cd /
 
 RUN git clone https://github.com/ifzhang/FairMOT
@@ -16,20 +35,6 @@ RUN mkdir data && cd data
 RUN wget https://motchallenge.net/data/MOT20.zip
 RUN unzip MOT20
 
-RUN apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
-        build-essential \
-        cmake \
-        git \
-        curl \
-        nano \
-        ca-certificates\
-        libjpeg-dev \
-        libpng-dev \
-        software-properties-common \
-    && apt-get -qq -y autoremove \
-    && apt-get autoclean \
-    && rm -rf /var/lib/apt/lists/* /var/log/dpkg.log
 
 RUN add-apt-repository universe
 RUN apt-get update
