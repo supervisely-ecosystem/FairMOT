@@ -31,6 +31,7 @@ RUN cd /
 RUN git clone https://github.com/ifzhang/FairMOT
 
 RUN cd /FairMOT/
+RUN git checkout develop && git pull
 RUN mkdir data && cd data
 RUN wget https://motchallenge.net/data/MOT20.zip
 RUN unzip MOT20
