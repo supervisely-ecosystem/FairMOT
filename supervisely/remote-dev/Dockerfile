@@ -96,7 +96,7 @@ RUN pip install torch==1.7.0+cu110 torchvision==0.8.1+cu110 torchaudio==0.7.0 -f
 # RUN git clone https://github.com/ifzhang/DCNv2.git
 # RUN cd DCNv2 && ./make.sh
 
-
+RUN python /FairMOT/src/gen_labels_20.py 
 
 
 
