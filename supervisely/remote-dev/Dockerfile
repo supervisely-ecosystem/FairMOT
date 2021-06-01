@@ -35,6 +35,9 @@ RUN git checkout develop && git pull
 RUN mkdir data && cd data
 RUN wget https://motchallenge.net/data/MOT20.zip
 RUN unzip MOT20
+RUN rm -f -r MOT20.zip && cd MOT20/
+RUN mkdir images && mkdir -p labels_with_ids/train
+RUN mv test images && mv train images
 
 
 RUN add-apt-repository universe
