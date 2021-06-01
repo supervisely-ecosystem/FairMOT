@@ -78,17 +78,7 @@ RUN pip install torch==1.7.0+cu110 torchvision==0.8.1+cu110 torchaudio==0.7.0 -f
 # RUN git clone https://github.com/ifzhang/DCNv2.git
 # RUN cd DCNv2 && ./make.sh
 
-RUN cd /
-
-RUN git clone https://github.com/ifzhang/FairMOT
-
-RUN cd /FairMOT/
-RUN mkdir data && cd data
-RUN wget https://motchallenge.net/data/MOT20.zip
-RUN unzip MOT20
-
-
-
+#RUN https://github.com/ifzhang/FairMOT
 
 # MORE SECURE: use a trusted RSA key
 ARG home=/root
