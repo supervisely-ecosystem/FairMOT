@@ -32,7 +32,7 @@ RUN git clone -b develop https://github.com/supervisely-ecosystem/FairMOT
 
 # RUN cd /FairMOT/ && git pull && git checkout develop && git pull
 RUN mkdir /FairMOT/data && cd /FairMOT/data && wget https://motchallenge.net/data/MOT20.zip && unzip MOT20.zip
-RUN rm -f -r /FairMOT/data/MOT20.zip && cd /FairMOT/data/MOT20/ && mkdir images && mkdir -p labels_with_ids/train && mkdir images && mkdir -p labels_with_ids/train
+RUN rm -f -r /FairMOT/data/MOT20.zip && cd /FairMOT/data/MOT20/ && mkdir -p labels_with_ids/train && mkdir images && mkdir -p labels_with_ids/train && mv train images && mv test images
 
 
 RUN add-apt-repository universe
@@ -89,8 +89,9 @@ RUN pip install torch==1.7.0+cu110 torchvision==0.8.1+cu110 torchaudio==0.7.0 -f
 # RUN export CUDA_HOME=/local/usr/cuda-11.1
 
 RUN git clone -b pytorch_1.7 https://github.com/ifzhang/DCNv2.git
-RUN cd DCNv2 && ./make.sh
+# RUN cd DCNv2 && ./make.sh
 
+RUN ls /FairMOT/data/MOT20
 RUN python /FairMOT/src/gen_labels_20.py 
 RUN pip install -r /FairMOT/requirements.txt 
 
