@@ -71,9 +71,9 @@ RUN pip install Werkzeug==1.0.1
 RUN pip install sk-video==1.1.10
 
 
-RUN pip install torch==1.7.0 torchvision==0.8.0 torchaudio==0.7.0
+RUN install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 
-RUN git clone -b pytorch_1.7 https://github.com/ifzhang/DCNv2.git
+RUN git clone https://github.com/ifzhang/DCNv2.git
 RUN cd DCNv2 && ./make.sh
 
 #RUN https://github.com/ifzhang/FairMOT
