@@ -90,15 +90,18 @@ RUN pip install torch==1.7.0+cu110 torchvision==0.8.1+cu110 torchaudio==0.7.0 -f
 
 # RUN export CUDA_HOME=/local/usr/cuda-11.1
 
-RUN git clone -b pytorch_1.7 https://github.com/ifzhang/DCNv2.git
-# RUN cd DCNv2 && ./make.sh
+
+# RUN export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+
+
 
 RUN ls /FairMOT/data/MOT20
 RUN python /FairMOT/src/gen_labels_20.py 
 RUN pip install -r /FairMOT/requirements.txt 
 
 
-
+RUN git clone -b pytorch_1.7 https://github.com/ifzhang/DCNv2.git
+RUN export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin && cd DCNv2 && ./make.sh
 
 # MORE SECURE: use a trusted RSA key
 ARG home=/root
