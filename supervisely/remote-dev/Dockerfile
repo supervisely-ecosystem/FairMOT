@@ -71,7 +71,7 @@ RUN pip install Werkzeug==1.0.1
 RUN pip install sk-video==1.1.10
 
 
-RUN install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
+RUN pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html
 
 RUN git clone https://github.com/ifzhang/DCNv2.git
 RUN cd DCNv2 && ./make.sh
