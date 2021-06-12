@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
+    "root":"/root/FairMOT/",
+=======
     "root":"/FairMOT/data/",
+>>>>>>> 0c54d7a59ea3abfa2d77cf837820075a0af98e07
     "train":
     {
         "mot20":"./data/mot20.train"
