@@ -2,7 +2,7 @@
 version: "2.2"
 services:
   fairmot:
-    shm_size: '2gb'
+    shm_size: '8gb'
     runtime: nvidia
     build:
       context: .

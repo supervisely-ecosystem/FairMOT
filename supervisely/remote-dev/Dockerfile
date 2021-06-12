@@ -28,13 +28,13 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* /var/log/dpkg.log
 
 
-RUN cd /
+RUN ls *
 
 RUN git clone -b develop https://github.com/supervisely-ecosystem/FairMOT 
 
 # RUN cd /FairMOT/ && git pull && git checkout develop && git pull
-RUN mkdir /FairMOT/data && cd /FairMOT/data && wget https://motchallenge.net/data/MOT20.zip && unzip MOT20.zip
-RUN rm -f -r /FairMOT/data/MOT20.zip && cd /FairMOT/data/MOT20/ && mkdir -p labels_with_ids/train && mkdir images && mkdir -p labels_with_ids/train && mv train images && mv test images
+# RUN mkdir /FairMOT/data && cd /FairMOT/data && wget https://motchallenge.net/data/MOT20.zip && unzip MOT20.zip
+# RUN rm -f -r /FairMOT/data/MOT20.zip && cd /FairMOT/data/MOT20/ && mkdir -p labels_with_ids/train && mkdir images && mkdir -p labels_with_ids/train && mv train images && mv test images
 
 
 RUN add-apt-repository universe
@@ -93,12 +93,18 @@ RUN pip install torch==1.7.0+cu110 torchvision==0.8.1+cu110 torchaudio==0.7.0 -f
 
 # RUN export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 
+RUN mkdir /FairMOT/data && cd /FairMOT/data &&  wget http://78.46.75.100:38585/h5un6l2bnaz1vj8a9qgms4-public/teams_storage/238/a/f/Un/wVoE6a6TavORT4zAkk2nxBPiCiaW6DBD0uLua8ZF19vKdBz6m5VmF4peYp37nCxvTScM7zeJ8wUqU8sZrklcwf5Bv8IdMBWSX1wVMrG5dI9T6WfrJm4RSzRwXooZ.tar && tar -xvf wVoE6a6TavORT4zAkk2nxBPiCiaW6DBD0uLua8ZF19vKdBz6m5VmF4peYp37nCxvTScM7zeJ8wUqU8sZrklcwf5Bv8IdMBWSX1wVMrG5dI9T6WfrJm4RSzRwXooZ.tar && mv ds_4725 SLY_MOT
+RUN rm -f -r /FairMOT/data/wVoE6a6TavORT4zAkk2nxBPiCiaW6DBD0uLua8ZF19vKdBz6m5VmF4peYp37nCxvTScM7zeJ8wUqU8sZrklcwf5Bv8IdMBWSX1wVMrG5dI9T6WfrJm4RSzRwXooZ.tar && cd /FairMOT/data/SLY_MOT/ && mkdir -p labels_with_ids/train && mkdir images && mkdir -p labels_with_ids/train && cp -r train images/test && mv train images
 
 
-RUN ls /FairMOT/data/MOT20
-RUN python /FairMOT/src/gen_labels_20.py 
+
+#RUN ls /FairMOT/data/MOT20
+
 RUN pip install -r /FairMOT/requirements.txt 
-
+RUN python /FairMOT/src/rename_img_seq.py
+# RUN python /FairMOT/src/gen_labels_15.py
+RUN cd /FairMOT/src/ && python ./gen_data_path.py
+ 
 
 RUN git clone -b pytorch_1.7 https://github.com/ifzhang/DCNv2.git
 # RUN cd DCNv2 && CUDA_VISIBLE_DEVICES=0 ./make.sh
