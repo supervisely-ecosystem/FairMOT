@@ -8,8 +8,13 @@ def mkdirs(d):
         os.makedirs(d)
 
 
+<<<<<<< HEAD
 seq_root = '/root/FairMOT/data/MOT20/images/train'
 label_root = '/root/FairMOT/data/MOT20/labels_with_ids/train'
+=======
+seq_root = '/FairMOT/data/MOT20/images/train'
+label_root = '/FairMOT/data/MOT20/labels_with_ids/train'
+>>>>>>> 0c54d7a59ea3abfa2d77cf837820075a0af98e07
 mkdirs(label_root)
 seqs = [s for s in os.listdir(seq_root)]
 

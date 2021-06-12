@@ -124,7 +124,11 @@ class opts(object):
     self.parser.add_argument('--data_cfg', type=str,
                              default='../src/lib/cfg/data.json',
                              help='load data from cfg')
+<<<<<<< HEAD
     self.parser.add_argument('--data_dir', type=str, default='/root/FairMOT/data/')
+=======
+    self.parser.add_argument('--data_dir', type=str, default='/FairMOT/data')
+>>>>>>> 0c54d7a59ea3abfa2d77cf837820075a0af98e07
 
     # loss
     self.parser.add_argument('--mse_loss', action='store_true',
