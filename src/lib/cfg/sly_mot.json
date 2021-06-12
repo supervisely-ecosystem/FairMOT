@@ -1,0 +1,15 @@
+{
+    "root":"/FairMOT/data/SLY_MOT",
+    "train":
+    {
+        "sly_mot":"./data/sly_mot.train"
+    },
+    "test_emb":
+    {
+        "sly_mot":"./data/sly_mot.train"
+    },
+    "test":
+    {
+        "sly_mot":"./data/sly_mot.train"
+    }
+}
