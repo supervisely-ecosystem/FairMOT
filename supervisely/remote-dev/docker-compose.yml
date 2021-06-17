@@ -7,7 +7,7 @@ services:
     build:
       context: .
       args:
-        IMAGE: nvidia/cuda:11.1.1-devel-ubuntu18.04
+        IMAGE: nvidia/cuda:11.1.1-devel-ubuntu18.04 --default-runtime=nvidia
     ports:
       - "1234:22"
     volumes:
