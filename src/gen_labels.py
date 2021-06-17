@@ -22,7 +22,7 @@ for seq in seqs:
     seq_width = int(seq_info[seq_info.find('imWidth=') + 8:seq_info.find('\nimHeight')])
     seq_height = int(seq_info[seq_info.find('imHeight=') + 9:seq_info.find('\nimExt')])
 
-    gt_txt = osp.join(seq_root, seq, 'gt', 'gt.txt')
+    gt_txt = osp.join(seq_root, seq, 'gt', 'gt_lemon.txt')
     gt = np.loadtxt(gt_txt, dtype=np.float64, delimiter=',')
     idx = np.lexsort(gt.T[:2, :])
     gt = gt[idx, :]
