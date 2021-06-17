@@ -1,19 +1,35 @@
 import os.path as osp
 import os
 import numpy as np
+import json
+
+def get_index_by_label(label):
+    return list(used_labels.keys())[list(used_labels.values()).index(label)]
 
 
-def mkdirs(d):
-    if not osp.exists(d):
-        os.makedirs(d)
+def cache_label_name(labels_dict, label_name):
+    cached_keys = sorted(list(labels_dict.keys()))
+
+    if len(cached_keys) == 0:
+        labels_dict[0] = label_name
+    else:
+        if label_name not in list(labels_dict.values()):
+            last_key = max(cached_keys)
+            fore_key = last_key + 1
+            labels_dict[fore_key] = label_name
+    return 0
 
 
-seq_root = '/FairMOT/data/SLY_MOT/images/train'
-label_root = '/FairMOT/data/SLY_MOT/labels_with_ids/train'
-mkdirs(label_root)
+used_labels = {}
+
+
+ds_root = '/FairMOT/data/SLY_MOT/'
+seq_root = osp.join(ds_root, 'images/train')
+label_root = osp.join(ds_root, 'labels_with_ids/train')
+
+os.makedirs(label_root, exist_ok=True)
+
 seqs = [s for s in os.listdir(seq_root)]
-#seqs = ['ADL-Rundle-6', 'ETH-Bahnhof', 'KITTI-13', 'PETS09-S2L1', 'TUD-Stadtmitte', 'ADL-Rundle-8', 'KITTI-17',
-#        'ETH-Pedcross2', 'ETH-Sunnyday', 'TUD-Campus', 'Venice-2']
 
 tid_curr = 0
 tid_last = -1
@@ -24,14 +40,16 @@ for seq in seqs:
     gt_names = sorted(os.listdir(osp.join(seq_root, seq, 'gt')))
 
     for label_index_curr, gt_name in enumerate(gt_names):
-        os.listdir()
+        label_name = gt_name.split('_')[1].split('.')[0]
+        cache_label_name(used_labels, label_name)
+
         gt_txt = osp.join(seq_root, seq, 'gt', f'{gt_name}')
         gt = np.loadtxt(gt_txt, dtype=np.float64, delimiter=',')
         idx = np.lexsort(gt.T[:2, :])
         gt = gt[idx, :]
 
         seq_label_root = osp.join(label_root, seq, 'img1')
-        mkdirs(seq_label_root)
+        os.makedirs(seq_label_root, exist_ok=True)
 
         for fid, tid, x, y, w, h, mark, _, _, _ in gt:
             if mark == 0:
@@ -45,6 +63,13 @@ for seq in seqs:
             y += h / 2
             label_fpath = osp.join(seq_label_root, '{:06d}.txt'.format(fid))
             label_str = '{:d} {:d} {:.6f} {:.6f} {:.6f} {:.6f}\n'.format(
-                label_index_curr, tid_curr, x / seq_width, y / seq_height, w / seq_width, h / seq_height)
+                get_index_by_label(label_name),
+                tid_curr, x / seq_width, y / seq_height, w / seq_width, h / seq_height)
             with open(label_fpath, 'a') as f:
                 f.write(label_str)
+
+with open(f'{osp.join(ds_root, "classes_mapping.json")}', 'w') as fp:
+    json.dump(used_labels, fp)
+
+print('done generating for classes:\n'
+      f'{used_labels}')
