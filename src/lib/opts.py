@@ -14,6 +14,10 @@ class opts(object):
     self.parser.add_argument('--dataset', default='jde', help='jde')
     self.parser.add_argument('--exp_id', default='default')
     self.parser.add_argument('--test', action='store_true')
+
+    self.parser.add_argument('--num_classes', type=int, default=1,
+                             help='num of classes')
+
     #self.parser.add_argument('--load_model', default='../models/ctdet_coco_dla_2x.pth',
                              #help='path to pretrained model')
     self.parser.add_argument('--load_model', default='',
