@@ -88,26 +88,27 @@ RUN pip install sk-video==1.1.10
 
 RUN pip install torch==1.7.0+cu110 torchvision==0.8.1+cu110 torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
 
-# RUN export CUDA_HOME=/local/usr/cuda-11.1
+
+ARG dataset_link=http://78.46.75.100:38585/h5un6l2bnaz1vj8a9qgms4-public/teams_storage/238/0/U/d5/M53BSP82TOkdRAeUKD2yzuzEucYFXy9dfyBdnm2cQvAsjeHXwFTu5yVefiRq4R9cWZehh2ZcRyYGHPmBGxYXOrzzn3YRS1VdUz860hoXoB2GEw085UrvrB4LU379.tar
 
 
-# RUN export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
-
-RUN mkdir /FairMOT/data && cd /FairMOT/data &&  wget http://78.46.75.100:38585/h5un6l2bnaz1vj8a9qgms4-public/teams_storage/238/a/f/Un/wVoE6a6TavORT4zAkk2nxBPiCiaW6DBD0uLua8ZF19vKdBz6m5VmF4peYp37nCxvTScM7zeJ8wUqU8sZrklcwf5Bv8IdMBWSX1wVMrG5dI9T6WfrJm4RSzRwXooZ.tar && tar -xvf wVoE6a6TavORT4zAkk2nxBPiCiaW6DBD0uLua8ZF19vKdBz6m5VmF4peYp37nCxvTScM7zeJ8wUqU8sZrklcwf5Bv8IdMBWSX1wVMrG5dI9T6WfrJm4RSzRwXooZ.tar && mv ds_4725 SLY_MOT
-RUN rm -f -r /FairMOT/data/wVoE6a6TavORT4zAkk2nxBPiCiaW6DBD0uLua8ZF19vKdBz6m5VmF4peYp37nCxvTScM7zeJ8wUqU8sZrklcwf5Bv8IdMBWSX1wVMrG5dI9T6WfrJm4RSzRwXooZ.tar && cd /FairMOT/data/SLY_MOT/ && mkdir -p labels_with_ids/train && mkdir images && mkdir -p labels_with_ids/train && cp -r train images/test && mv train images
+RUN mkdir /FairMOT/data && cd /FairMOT/data &&  wget $dataset_link && tar -xvf *.tar && mv ds_* SLY_MOT
+RUN rm -f -r /FairMOT/data/*.tar && cd /FairMOT/data/SLY_MOT/ && mkdir -p labels_with_ids/train && mkdir images && mkdir -p labels_with_ids/train && cp -r train images/test && mv train images
 
 
-
-#RUN ls /FairMOT/data/MOT20
 
 RUN pip install -r /FairMOT/requirements.txt 
-RUN python /FairMOT/src/rename_img_seq.py
-# RUN python /FairMOT/src/gen_labels_15.py
+# RUN python /FairMOT/src/rename_img_seq.py
+RUN python /FairMOT/src/gen_labels.py
 RUN cd /FairMOT/src/ && python ./gen_data_path.py
  
 
 RUN git clone -b pytorch_1.7 https://github.com/ifzhang/DCNv2.git
 # RUN cd DCNv2 && CUDA_VISIBLE_DEVICES=0 ./make.sh
+
+
+
+
 
 # MORE SECURE: use a trusted RSA key
 ARG home=/root
