@@ -95,7 +95,7 @@ ARG dataset_link=http://78.46.75.100:38585/h5un6l2bnaz1vj8a9qgms4-public/teams_s
 RUN mkdir /FairMOT/data && cd /FairMOT/data &&  wget $dataset_link && tar -xvf *.tar && mv ds_* SLY_MOT
 RUN rm -f -r /FairMOT/data/*.tar && cd /FairMOT/data/SLY_MOT/ && mkdir -p labels_with_ids/train && mkdir images && mkdir -p labels_with_ids/train && cp -r train images/test && mv train images
 
-
+RUN cd /FairMOT/ && git pull
 
 RUN pip install -r /FairMOT/requirements.txt 
 # RUN python /FairMOT/src/rename_img_seq.py
