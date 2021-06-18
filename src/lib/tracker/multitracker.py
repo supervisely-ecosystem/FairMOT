@@ -212,6 +212,7 @@ class JDETracker(object):
     def merge_outputs(self, detections):
         results = {}
         for j in range(1, self.opt.num_classes + 1):
+
             results[j] = np.concatenate(
                 [detection[j] for detection in detections], axis=0).astype(np.float32)
 
@@ -259,21 +260,23 @@ class JDETracker(object):
         dets = self.post_process(dets, meta)
         dets = self.merge_outputs([dets])[1]
 
+        # dets = dets.squeeze(0)
+        # dets = dets.cpu().numpy()
         remain_inds = dets[:, 4] > self.opt.conf_thres
         dets = dets[remain_inds]
         id_feature = id_feature[remain_inds]
 
         # vis
-        '''
-        for i in range(0, dets.shape[0]):
-            bbox = dets[i][0:4]
-            cv2.rectangle(img0, (bbox[0], bbox[1]),
-                          (bbox[2], bbox[3]),
-                          (0, 255, 0), 2)
-        cv2.imshow('dets', img0)
-        cv2.waitKey(0)
-        id0 = id0-1
-        '''
+        # '''
+        # for i in range(0, dets.shape[0]):
+        #     bbox = dets[i][0:4]
+        #     cv2.rectangle(img0, (bbox[0], bbox[1]),
+        #                   (bbox[2], bbox[3]),
+        #                   (0, 255, 0), 2)
+        # cv2.imshow('dets', img0)
+        # cv2.waitKey(0)
+        # id0 = id0-1
+        # '''
 
         if len(dets) > 0:
             '''Detections'''
