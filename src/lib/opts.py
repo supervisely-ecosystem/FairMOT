@@ -73,15 +73,15 @@ class opts(object):
                              help='input width. -1 for default from dataset.')
     
     # train
-    self.parser.add_argument('--lr', type=float, default=1e-4,
+    self.parser.add_argument('--lr', type=float, default=8e-5,
                              help='learning rate for batch size 12.')
     self.parser.add_argument('--lr_step', type=str, default='20',
                              help='drop learning rate by 10.')
     self.parser.add_argument('--num_epochs', type=int, default=30,
                              help='total training epochs.')
-    self.parser.add_argument('--batch_size', type=int, default=12,
+    self.parser.add_argument('--batch_size', type=int, default=8,
                              help='batch size')
-    self.parser.add_argument('--master_batch_size', type=int, default=12,
+    self.parser.add_argument('--master_batch_size', type=int, default=8,
                              help='batch size on the master gpu.')
     self.parser.add_argument('--num_iters', type=int, default=-1,
                              help='default: #samples / batch_size.')
