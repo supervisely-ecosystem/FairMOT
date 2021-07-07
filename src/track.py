@@ -94,8 +94,9 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
         for t in online_targets:
             tlwh = t.tlwh
             tid = t.track_id
-            vertical = tlwh[2] / tlwh[3] > 1.6
-            if tlwh[2] * tlwh[3] > opt.min_box_area and not vertical:
+            # vertical = tlwh[2] / tlwh[3] > 1.6
+            # if tlwh[2] * tlwh[3] > opt.min_box_area and not vertical:
+            if tlwh[2] * tlwh[3] > opt.min_box_area:
                 online_tlwhs.append(tlwh)
                 online_ids.append(tid)
                 #online_scores.append(t.score)
