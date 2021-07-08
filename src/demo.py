@@ -23,6 +23,8 @@ def demo(opt):
     mkdir_if_missing(result_root)
 
     models_paths = sorted(glob.glob(os.path.join(opt.load_model, '*.pth')))
+    # models_paths = [models_paths[-1]]
+    # print(models_paths)
     for model_path in models_paths:
         print(model_path)
         opt.load_model = model_path
