@@ -2,7 +2,7 @@ import os
 import supervisely_lib as sly
 from sly_train_progress import init_progress
 import sly_globals as g
-from tools.train import main as mm_train
+# from tools.train import main as mm_train
 
 _open_lnk_name = "open_app.lnk"
 
@@ -11,6 +11,8 @@ def init(data, state):
     init_progress("Epoch", data)
     init_progress("Iter", data)
     init_progress("UploadDir", data)
+    init_progress("InputVideo", data)
+
     data["eta"] = None
 
     init_charts(data, state)
@@ -108,7 +110,7 @@ def train(api: sly.Api, task_id, context, state, app_logger):
         sly.json.dump_json_file(state, os.path.join(g.info_dir, "ui_state.json"))
 
         init_script_arguments(state)
-        mm_train()
+        # mm_train()
 
         # hide progress bars and eta
         fields = [

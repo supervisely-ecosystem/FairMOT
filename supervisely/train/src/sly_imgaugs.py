@@ -1,8 +1,8 @@
-from mmcls.datasets.builder import PIPELINES
+# from mmcls.datasets.builder import PIPELINES
 import supervisely_lib as sly
 
 
-@PIPELINES.register_module()
+# @PIPELINES.register_module()
 class SlyImgAugs(object):
     def __init__(self, config_path):
         self.config_path = config_path

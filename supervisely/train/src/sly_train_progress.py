@@ -33,6 +33,7 @@ def _update_progress_ui(index, api: sly.Api, task_id, progress: sly.Progress, st
 def get_progress_cb(index, message, total, is_size=False, min_report_percent=5, upd_func=update_progress):
     progress = sly.Progress(message, total, is_size=is_size, min_report_percent=min_report_percent)
     progress_cb = partial(upd_func, index=index, api=globals.api, task_id=globals.task_id, progress=progress)
+
     progress_cb(0)
     return progress_cb
 
@@ -56,7 +57,7 @@ def init_progress(index, data):
 
 def update_uploading_progress(count, api: sly.Api, task_id, progress: sly.Progress):
     progress.iters_done(count - progress.current)
-    _update_progress_ui(api, task_id, progress, stdout_print=True)
+    _update_progress_ui(api, task_id, progress)
 
 
 def add_progress_to_request(fields, index, progress: sly.Progress):

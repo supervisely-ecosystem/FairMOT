@@ -18,6 +18,6 @@ cd src
 #python train.py mot --exp_id sly_mot_global_17 --num_epochs 20 --lr_step 15 --data_cfg ../src/lib/cfg/sly_mot.json --lr 1e-4 --batch_size 5 --wh_weight 0.1 --ltrb False
 #python train.py mot --exp_id sly_mot_global_18 --num_epochs 20 --lr_step 15 --data_cfg ../src/lib/cfg/sly_mot.json --lr 1e-4 --batch_size 5 --wh_weight 0.1 --off_weight 0.1
 #python train.py mot --exp_id sly_mot_global_19 --num_epochs 20 --lr_step 15 --data_cfg ../src/lib/cfg/sly_mot.json --lr 1e-4 --batch_size 5 --wh_weight 1 --off_weight 0.1 --id_weight 0.1
-python train.py mot --exp_id sly_mot_global_21 --num_epochs 100 --lr_step 30 --data_cfg ../src/lib/cfg/sly_mot.json --lr 1e-4 --batch_size 5 --wh_weight 1
+python train.py mot --exp_id sly_mot_global_21 --num_epochs 20 --lr_step 12 --data_cfg ../src/lib/cfg/sly_mot.json --lr 1e-4 --batch_size 5 --wh_weight 1
 
 cd ..

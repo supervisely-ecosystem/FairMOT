@@ -379,8 +379,8 @@ def _validate_models_configs(models):
 
 
 def init(data, state):
-    models = get_models_list()
-    data["models"] = models
+    # models = get_models_list()
+    data["models"] = None
     data["modelColumns"] = get_table_columns()
     state["selectedModel"] = "ResNet-34"  # "ResNet-50"
     state["weightsInitialization"] = "imagenet"  # "custom"  # "imagenet" #@TODO: for debug
