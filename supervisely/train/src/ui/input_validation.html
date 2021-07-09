@@ -1,0 +1,89 @@
+<sly-card
+        title="Validation data"
+
+        subtitle="Download validation data from server to local app directory"
+        :options="{collapsable: true}"
+        :collapsed.sync="state.collapsed2"
+        :disabled="{disabled: state.disabled2, message: 'complete stage 1 to unlock'}"
+        ref="step2"
+>
+
+
+    <sly-select-team-workspace
+            :team-id.sync="state.validationTeamId"
+            :workspace-id.sync="state.validationWorkspaceId"
+            :disabled="data.done2">
+
+    </sly-select-team-workspace>
+    <sly-select-project
+            :workspace-id="state.validationWorkspaceId"
+            :project-id.sync="state.validationProjectId"
+            :disabled="data.done2"
+            :options="{ availableTypes: ['videos'] }">
+    </sly-select-project>
+
+    <el-checkbox class="mt15" v-model="state.validationAllDatasets"
+                 :disabled="true">All datasets
+    </el-checkbox>
+    <sly-select-dataset
+            v-show="!state.validationAllDatasets"
+            :project-id="state.validationProjectId"
+            :datasets.sync="state.validationDatasets"
+            :options="{ multiple: true, valueProperty: 'id' }"
+            :disabled="data.done2">
+    </sly-select-dataset>
+
+    <div class="mt15">
+        <el-button
+                type="primary"
+                class="regular"
+
+                :loading="state.step2Loading"
+                @click="state.step2Loading=true; command('download_project_validation')"
+                v-if="!data.done2 && !(!state.validationProjectId || (!state.validationAllDatasets && !(state.validationDatasets.length > 0)))">
+            Download
+        </el-button>
+        <el-button
+                type="primary"
+                class="regular"
+                :loading="state.step2Loading"
+                @click="state.step2Loading=true; command('skip_validation'); state.step2Loading=false"
+                v-if="!data.done2 && (!state.validationProjectId || (!state.validationAllDatasets && !(state.validationDatasets.length > 0)))">
+            Skip validation
+        </el-button>
+        <div v-if="data.done2">
+            <i class="zmdi zmdi-check-circle mr5 mt10 mb10" style="color: #13ce66"></i>
+            <span v-if="state.validationProjectId "
+                  style="color: #5a6772;">Validation videos successfully downloaded</span>
+            <span v-if="!state.validationProjectId " style="color: #5a6772;">Validation successfully skipped</span>
+        </div>
+
+
+        <div v-if="data.progressInputProject && data.done1" class="mb5" style="padding-top: 20px">
+            <div style="color: #20a0ff">{{data.progressInputProject}}: {{data.progressCurrentInputProject}} /
+                {{data.progressTotalInputProject}}
+            </div>
+            <el-progress :percentage="data.progressPercentInputProject"></el-progress>
+        </div>
+        <div v-if="data.progressInputDataset && data.done1" class="mt10">
+            <div style="color: #20a0ff">{{data.progressInputDataset}}: {{data.progressCurrentInputDataset}} /
+                {{data.progressTotalInputDataset}}
+            </div>
+            <el-progress :percentage="data.progressPercentInputDataset"></el-progress>
+        </div>
+        <div v-if="data.progressInputVideo && data.done1" class="mt10">
+            <div style="color: #20a0ff">{{data.progressInputVideo}}: {{data.progressCurrentInputVideo}} /
+                {{data.progressTotalInputVideo}}
+            </div>
+            <el-progress :percentage="data.progressPercentInputVideo"></el-progress>
+        </div>
+
+
+        <el-button type="warning" class="regular mt10" :plain="true"
+                   @click="state.restartFrom=2;"
+                   v-if="data.done2">
+            <i class="zmdi zmdi-rotate-left mr5"></i> reselect
+        </el-button>
+    </div>
+
+</sly-card>

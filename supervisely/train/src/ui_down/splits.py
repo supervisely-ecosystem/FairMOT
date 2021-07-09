@@ -47,8 +47,9 @@ def init(project_info, project_meta: sly.ProjectMeta, data, state):
     data["trainImagesCount"] = None
     data["valImagesCount"] = None
     data["done2"] = False
-    state["collapsed2"] = True
-    state["disabled2"] = True
+
+    state["collapsed2"] = not True
+    state["disabled2"] = not True
 
 
 def get_train_val_sets(project_dir, state):
@@ -57,18 +58,6 @@ def get_train_val_sets(project_dir, state):
         train_count = state["randomSplit"]["count"]["train"]
         val_count = state["randomSplit"]["count"]["val"]
         train_set, val_set = sly.Project.get_train_val_splits_by_count(project_dir, train_count, val_count)
-        return train_set, val_set
-    elif split_method == "tags":
-        train_tag_name = state["trainTagName"]
-        val_tag_name = state["valTagName"]
-        add_untagged_to = state["untaggedImages"]
-        train_set, val_set = sly.Project.get_train_val_splits_by_tag(project_dir, train_tag_name, val_tag_name,
-                                                                     add_untagged_to)
-        return train_set, val_set
-    elif split_method == "datasets":
-        train_datasets = state["trainDatasets"]
-        val_datasets = state["valDatasets"]
-        train_set, val_set = sly.Project.get_train_val_splits_by_dataset(project_dir, train_datasets, val_datasets)
         return train_set, val_set
     else:
         raise ValueError(f"Unknown split method: {split_method}")

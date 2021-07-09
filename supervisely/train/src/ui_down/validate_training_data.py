@@ -2,7 +2,7 @@ from collections import defaultdict
 import os
 import supervisely_lib as sly
 import sly_globals as g
-import input_project
+import input_train_validation
 import random
 import tags
 
@@ -180,7 +180,7 @@ def validate_data(api: sly.Api, task_id, context, state, app_logger):
         _splits_to_dump = defaultdict(lambda: defaultdict(list))
         for tag_name, splits in final_tags2images.items():
             for split_name, infos in splits.items():
-                paths = [input_project.get_paths_by_image_id(info.id) for info in infos]
+                paths = [input_train_validation.get_paths_by_image_id(info.id) for info in infos]
                 split_paths[split_name].extend(paths)
         sly.json.dump_json_file(split_paths, os.path.join(g.project_dir, "splits.json"))
 

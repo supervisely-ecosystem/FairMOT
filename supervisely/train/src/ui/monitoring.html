@@ -1,13 +1,13 @@
 <sly-card title="Training progress"
           subtitle="Task progress, detailed logs, metrics charts, and other visualizations"
-          ref="step9"
+          ref="step5"
           :options="{collapsable: true}"
-          :collapsed.sync="state.collapsed9"
-          :disabled="{disabled: state.disabled9, message: 'Finish previous steps before run training'}">
-    <el-button v-if="!state.done9"
+          :collapsed.sync="state.collapsed5"
+          :disabled="{disabled: state.disabled5, message: 'Finish previous steps before run training'}">
+    <el-button v-if="!state.done5"
                type="primary" class="regular"
-               @click="state.started = true; command('train')"
-               :loading="state.started === true"
+               @click="state.trainStarted = true; command('train')"
+               :loading="state.trainStarted === true"
     >
         <i class="zmdi zmdi-play mr5"></i> Train
     </el-button>
@@ -49,7 +49,7 @@
         <el-progress :percentage="data.progressPercentIter"></el-progress>
     </div>
 
-    <div class="mt15" v-if="state.started === true || state.done9">
+    <div class="mt15" v-if="state.trainStarted === true || state.done5">
         <hr class="mt10 mb10" style="border: 0; border-top: 1px solid rgba(0,0,0,.12);"/>
         <sly-field title="Smoothing" description="Change the smoothing of line charts">
             <sly-icon slot="icon" :options="{ color: '#006ad4', bgColor: '#bbe2ff', rounded: false }">

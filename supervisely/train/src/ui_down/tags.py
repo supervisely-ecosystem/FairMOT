@@ -2,7 +2,7 @@ import os
 from collections import defaultdict
 import supervisely_lib as sly
 
-import input_project
+import input_train_validation
 import splits
 import sly_globals as g
 from sly_train_progress import get_progress_cb, reset_progress, init_progress
@@ -56,7 +56,7 @@ def init_cache(split_items, split_name, progress_cb):
         name = item.name
         dataset_name = item.dataset_name
         ann_path = item.ann_path
-        img_info = input_project.get_image_info_from_cache(dataset_name, name)
+        img_info = input_train_validation.get_image_info_from_cache(dataset_name, name)
 
         ann = sly.Annotation.load_json_file(ann_path, g.project_meta)
         if len(ann.img_tags) == 0:

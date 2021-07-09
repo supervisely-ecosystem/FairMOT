@@ -1,13 +1,11 @@
 import supervisely_lib as sly
 import sly_globals as g
-import input_project as input_project
-import tags
-import splits as train_val_split
-import validate_training_data
-import augs
+import input_train_validation as input_project
+
+
 import architectures as model_architectures
 import hyperparameters as hyperparameters
-import hyperparameters_python as hyperparameters_python
+
 import monitoring as monitoring
 # import artifacts as artifacts
 
@@ -16,14 +14,12 @@ import monitoring as monitoring
 def init(data, state):
     state["activeStep"] = 1
     state["restartFrom"] = None
+
     input_project.init(data, state)
-    train_val_split.init(g.project_info, g.project_meta, data, state)
-    tags.init(data, state)
-    validate_training_data.init(data, state)
-    augs.init(data, state)
+
     model_architectures.init(data, state)
     hyperparameters.init(data, state)
-    hyperparameters_python.init(data, state)
+
     monitoring.init(data, state)
     # artifacts.init(data)
 
@@ -36,20 +32,6 @@ def restart(api: sly.Api, task_id, context, state, app_logger):
     data = {}
     state = {}
 
-    if restart_from_step <= 2:
-        train_val_split.init(g.project_info, g.project_meta, data, state)
-    if restart_from_step <= 3:
-        if restart_from_step == 3:
-            tags.restart(data, state)
-        else:
-            tags.init(data, state)
-    if restart_from_step <= 4:
-        validate_training_data.init(data, state)
-    if restart_from_step <= 5:
-        if restart_from_step == 5:
-            augs.restart(data, state)
-        else:
-            augs.init(data, state)
     if restart_from_step <= 6:
         if restart_from_step == 6:
             model_architectures.restart(data, state)

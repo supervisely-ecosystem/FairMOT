@@ -10,6 +10,8 @@ from supervisely_lib.io.fs import mkdir, get_file_name
 from supervisely_lib.video_annotation.key_id_map import KeyIdMap
 from supervisely_lib.geometry.rectangle import Rectangle
 
+import shutil
+
 progress_index = 1
 _images_infos = None # dataset_name -> image_name -> image_info
 _cache_base_filename = os.path.join(g.my_app.data_dir, "images_info")
@@ -26,41 +28,116 @@ def init(data, state):
     data["done1"] = False
     state["collapsed1"] = False
 
+    state["validationTeamId"] = None
+    state["validationWorkspaceId"] = None
+    state["validationProjectId"] = None
+    state["validationDatasets"] = []
+    state["validationAllDatasets"] = True
 
-@g.my_app.callback("download_project")
+
+
+"""
+RUN mkdir /FairMOT/data && cd /FairMOT/data &&  wget $dataset_link && tar -xvf *.tar && mv ds_* SLY_MOT
+RUN rm -f -r /FairMOT/data/*.tar && cd /FairMOT/data/SLY_MOT/ && mkdir -p labels_with_ids/train && mkdir images && mkdir -p labels_with_ids/train && cp -r train images/test && mv train images
+
+RUN cd /FairMOT/ && git pull
+
+RUN pip install -r /FairMOT/requirements.txt 
+# RUN python /FairMOT/src/rename_img_seq.py
+RUN python /FairMOT/src/gen_labels.py
+RUN cd /FairMOT/src/ && python ./gen_data_path.py
+
+"""
+
+
+def organize_in_mot_format(is_train=True):
+    working_dir = 'train' if is_train else 'validation'
+    data_dir = os.path.join(g.my_app.data_dir, f'input_data_{working_dir}')
+
+    projects = [name for name in os.listdir(data_dir) if os.path.isdir(os.path.join(data_dir, name))]
+
+    mot_general_dir = os.path.join(g.my_app.data_dir, 'data', 'SLY_MOT')
+    mot_images_path = os.path.join(mot_general_dir, f'images/{working_dir}')
+    os.makedirs(mot_images_path, exist_ok=True)
+    #
+    # labels_with_ids_path = os.path.join(mot_general_dir, 'labels_with_ids/train')
+    # os.makedirs(labels_with_ids_path, exist_ok=True)
+
+    for project in projects:
+        project_path = os.path.join(data_dir, project)
+        datasets_names = [name for name in os.listdir(project_path) if os.path.isdir(os.path.join(project_path, name))]
+
+        for ds_index, dataset_name in enumerate(datasets_names):
+
+            ds_root = os.path.join(project_path, dataset_name, 'train')
+            videos_names = os.listdir(ds_root)
+            for video_index, video_name in enumerate(videos_names):
+                source = os.path.join(ds_root, video_name)
+
+                destination = os.path.join(mot_images_path, f'{project}_{ds_index}_{video_index}')
+                shutil.move(source, destination)
+
+
+@g.my_app.callback("download_project_train")
 @sly.timeit
 # @g.my_app.ignore_errors_and_show_dialog_window()
-def download(api: sly.api, task_id, context, state, app_logger):
-    try:
-        if not sly.fs.dir_exists(g.project_dir):
-            sly.fs.mkdir(g.project_dir)
+def download_project_train(api: sly.api, task_id, context, state, app_logger):
+    download_project([g.project_id], is_train=True)
 
-        download_progress = get_progress_cb(progress_index, "Download project", 1)
-        from_sl_to_MOT(projects_ids=[g.project_id])
-        download_progress(1)
-        reset_progress(progress_index)
 
-    except Exception as e:
-        reset_progress(progress_index)
-        raise e
+@g.my_app.callback("download_project_validation")
+@sly.timeit
+# @g.my_app.ignore_errors_and_show_dialog_window()
+def download_project_validation(api: sly.api, task_id, context, state, app_logger):
+    download_project([state['validationProjectId']], is_train=False)
 
+
+@g.my_app.callback("skip_validation")
+@sly.timeit
+# @g.my_app.ignore_errors_and_show_dialog_window()
+def download_project_validation(api: sly.api, task_id, context, state, app_logger):
+    # download_project()
     fields = [
-        {"field": "data.done1", "payload": True},
-        {"field": "state.collapsed2", "payload": False},
-        {"field": "state.disabled2", "payload": False},
-        {"field": "state.activeStep", "payload": 2},
+        {"field": f"data.done2", "payload": True},
+        {"field": f"state.collapsed3", "payload": False},
+        {"field": f"state.disabled3", "payload": False},
+        {"field": f"state.activeStep", "payload": 3},
     ]
     g.api.app.set_fields(g.task_id, fields)
 
 
-def from_sl_to_MOT(projects_ids):
+def download_project(project_ids, is_train=True):
+    try:
+        if not sly.fs.dir_exists(g.project_dir):
+            sly.fs.mkdir(g.project_dir)
+
+        from_sl_to_MOT(projects_ids=project_ids, is_train=is_train)
+        organize_in_mot_format(is_train)
+
+    except Exception as e:
+        raise e
+
+    fields = [
+        {"field": f"data.done{1 if is_train else 2}", "payload": True},
+        {"field": f"state.collapsed{2 if is_train else 3}", "payload": False},
+        {"field": f"state.disabled{2 if is_train else 3}", "payload": False},
+        {"field": f"state.activeStep", "payload": 2 if is_train else 3},
+    ]
+    g.api.app.set_fields(g.task_id, fields)
+
+
+def from_sl_to_MOT(projects_ids, is_train=True):
     images_dir_name = 'img1'
     ann_dir_name = 'gt'
     dir_train = 'train'
     image_ext = '.jpg'
     seq_name = 'seqinfo.ini'
     frame_rate = 25  # @TODO: from video
+    # video_info.frames_to_timecodes.index(1)
+
     conf_tag_name = 'ignore_conf'
+
+    download_progress_project = get_progress_cb("InputProject", "Current project", len(projects_ids))
 
     for project_id in projects_ids:
         project = g.api.project.get_info_by_id(project_id)
@@ -69,13 +146,16 @@ def from_sl_to_MOT(projects_ids):
         if project.type != str(sly.ProjectType.VIDEOS):
             raise TypeError("Project type is {!r}, but have to be {!r}".format(project.type, sly.ProjectType.VIDEOS))
 
-        project_name = project.name
         meta_json = g.api.project.get_meta(project_id)
         meta = sly.ProjectMeta.from_json(meta_json)
 
-        RESULT_DIR = os.path.join(g.my_app.data_dir, 'input_data')
+        result_dir = os.path.join(g.my_app.data_dir, f'input_data_{"train" if is_train else "validation"}',
+                                  str(project_id))
+
         key_id_map = KeyIdMap()
-        for dataset in g.api.dataset.get_list(project_id):
+        project_datasets = g.api.dataset.get_list(project_id)
+        download_progress_dataset = get_progress_cb("InputDataset", "Current dataset", len(project_datasets))
+        for dataset in project_datasets:
             videos = g.api.video.get_list(dataset.id)
             for batch in sly.batched(videos, batch_size=10):
                 for video_info in batch:
@@ -88,11 +168,11 @@ def from_sl_to_MOT(projects_ids):
                         print('invalid_shape')
                         continue
 
-                    result_images = os.path.join(RESULT_DIR, dataset.name, dir_train, get_file_name(video_info.name),
+                    result_images = os.path.join(result_dir, dataset.name, dir_train, get_file_name(video_info.name),
                                                  images_dir_name)
-                    result_anns = os.path.join(RESULT_DIR, dataset.name, dir_train, get_file_name(video_info.name),
+                    result_anns = os.path.join(result_dir, dataset.name, dir_train, get_file_name(video_info.name),
                                                ann_dir_name)
-                    seq_path = os.path.join(RESULT_DIR, dataset.name, dir_train, get_file_name(video_info.name), seq_name)
+                    seq_path = os.path.join(result_dir, dataset.name, dir_train, get_file_name(video_info.name), seq_name)
 
                     # gt_path = os.path.join(result_anns, gt_name)
 
@@ -103,7 +183,7 @@ def from_sl_to_MOT(projects_ids):
                         f.write('[Sequence]\n')
                         f.write('name={}\n'.format(get_file_name(video_info.name)))
                         f.write('imDir={}\n'.format(images_dir_name))
-                        f.write('frameRate={}\n'.format(video_info.frames_to_timecodes.index(1)))
+                        f.write('frameRate={}\n'.format(round(1 / video_info.frames_to_timecodes[1])))
                         f.write('seqLength={}\n'.format(video_info.frames_count))
                         f.write('imWidth={}\n'.format(video_info.frame_width))
                         f.write('imHeight={}\n'.format(video_info.frame_height))
@@ -113,8 +193,7 @@ def from_sl_to_MOT(projects_ids):
                     for idx, curr_video_obj in enumerate(ann.objects):
                         id_to_video_obj[curr_video_obj] = idx + 1
 
-                    download_progress = get_progress_cb("InputVideo", "Current video", len(ann.frames))
-                    download_progress(0)
+                    download_progress_frames = get_progress_cb("InputVideo", "Downloading frames", len(ann.frames))
 
                     for frame_index, frame in enumerate(ann.frames):
                         for figure in frame.figures:
@@ -145,6 +224,11 @@ def from_sl_to_MOT(projects_ids):
                         if frame_index == ann.frames_count:
                             break
                         g.api.video.frame.download_path(video_info.id, frame_index, image_path)
-                        download_progress(1)  # updating progress
+                        download_progress_frames(1)  # updating progress
+            download_progress_dataset(1)
+        download_progress_project(1)
 
+    reset_progress("InputVideo")
+    reset_progress("InputDataset")
+    reset_progress("InputProject")
 

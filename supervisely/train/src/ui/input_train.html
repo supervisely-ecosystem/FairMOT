@@ -1,6 +1,6 @@
 <sly-card
-        title="Input Project"
-        subtitle="Download images and annotations from server to local app directory"
+        title="Train data"
+        subtitle="Download train data from server to local app directory"
         :options="{collapsable: true}"
         :collapsed.sync="state.collapsed1"
         ref="step1"
@@ -13,16 +13,20 @@
     <el-button
             type="primary"
             class="regular"
-            :loading="!!data.progress1"
-            @click="command('download_project')"
+            :loading="data.progressInputProject"
+            @click="command('download_project_train')"
             v-if="!data.done1">
         Download
     </el-button>
-    <div v-if="data.progress1" class="mb5" style="padding-top: 20px">
-        <div style="color: #20a0ff">{{data.progress1}}: {{data.progressCurrent1}} / {{data.progressTotal1}}</div>
-        <el-progress :percentage="data.progressPercent1"></el-progress>
+    <div v-if="data.progressInputProject && !data.done1" class="mb5" style="padding-top: 20px">
+        <div style="color: #20a0ff">{{data.progressInputProject}}: {{data.progressCurrentInputProject}} / {{data.progressTotalInputProject}}</div>
+        <el-progress :percentage="data.progressPercentInputProject"></el-progress>
     </div>
-    <div v-if="data.progressInputVideo" class="mt5">
+    <div v-if="data.progressInputDataset && !data.done1" class="mt10">
+        <div style="color: #20a0ff">{{data.progressInputDataset}}: {{data.progressCurrentInputDataset}} / {{data.progressTotalInputDataset}}</div>
+        <el-progress :percentage="data.progressPercentInputDataset"></el-progress>
+    </div>
+    <div v-if="data.progressInputVideo && !data.done1" class="mt10">
         <div style="color: #20a0ff">{{data.progressInputVideo}}: {{data.progressCurrentInputVideo}} / {{data.progressTotalInputVideo}}</div>
         <el-progress :percentage="data.progressPercentInputVideo"></el-progress>
     </div>
