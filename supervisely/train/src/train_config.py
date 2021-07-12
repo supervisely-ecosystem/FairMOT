@@ -3,8 +3,8 @@ import re
 import supervisely_lib as sly
 
 import sly_globals as g
-import architectures
-import augs
+# import architectures
+# import augs
 
 model_config_name = "model_config.py"
 dataset_config_name = "dataset_config.py"
@@ -37,10 +37,10 @@ def _replace_function(var_name, var_value, template, match):
 
 def generate_model_config(state):
     model_name = state["selectedModel"]
-    model_info = architectures.get_model_info_by_name(model_name)
-    lib_model_config_path = os.path.join(g.root_source_dir, model_info["modelConfig"])
-    with open(lib_model_config_path) as f:
-        py_config = f.read()
+    # model_info = architectures.get_model_info_by_name(model_name)
+    # lib_model_config_path = os.path.join(g.root_source_dir, model_info["modelConfig"])
+    # with open(lib_model_config_path) as f:
+    #     py_config = f.read()
 
     num_tags = len(state["selectedTags"])
     py_config = re.sub(r"num_classes*=(\d+),",

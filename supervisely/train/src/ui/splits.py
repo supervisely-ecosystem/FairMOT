@@ -1,9 +1,11 @@
 import os
 import supervisely_lib as sly
 import sly_globals as g
+import random
 
-train_set = None
-val_set = None
+
+def restart(data, state):
+    data["done2"] = False
 
 
 def init(data, state):
@@ -53,26 +55,32 @@ def init(data, state):
     state["collapsed2"] = not True
     state["disabled2"] = not True
 
+    state["trainVideosPaths"] = None
+    state["valVideosPaths"] = None
+
 
 def get_train_val_sets(project_dir, state):
     split_method = state["splitMethod"]
     if split_method == "random":
         train_count = state["randomSplit"]["count"]["train"]
         val_count = state["randomSplit"]["count"]["val"]
-        train_set, val_set = sly.Project.get_train_val_splits_by_count(project_dir, train_count, val_count)
-        return train_set, val_set
-    elif split_method == "tags":
-        train_tag_name = state["trainTagName"]
-        val_tag_name = state["valTagName"]
-        add_untagged_to = state["untaggedVideos"]
-        train_set, val_set = sly.Project.get_train_val_splits_by_tag(project_dir, train_tag_name, val_tag_name,
-                                                                     add_untagged_to)
-        return train_set, val_set
+
+        train_videos_paths, val_videos_paths = split_videos_randomly_by_counts(train_count, val_count)
+        return train_videos_paths, val_videos_paths
+
     elif split_method == "datasets":
-        train_datasets = state["trainDatasets"]
-        val_datasets = state["valDatasets"]
-        train_set, val_set = sly.Project.get_train_val_splits_by_dataset(project_dir, train_datasets, val_datasets)
-        return train_set, val_set
+        train_datasets_names = state["trainDatasets"]
+        val_datasets_names = state["valDatasets"]
+        train_videos_paths, val_videos_paths = split_videos_by_datasets(train_datasets_names, val_datasets_names)
+        return train_videos_paths, val_videos_paths
+
+    # elif split_method == "tags":
+    #     train_tag_name = state["trainTagName"]
+    #     val_tag_name = state["valTagName"]
+    #     add_untagged_to = state["untaggedVideos"]
+    #     train_set, val_set = sly.Project.get_train_val_splits_by_tag(project_dir, train_tag_name, val_tag_name,
+    #                                                                  add_untagged_to)
+    #     return train_set, val_set
     else:
         raise ValueError(f"Unknown split method: {split_method}")
 
@@ -84,14 +92,82 @@ def verify_train_val_sets(train_set, val_set):
         raise ValueError("Val set is empty, check or change split configuration")
 
 
-# def save_set_to_json(path, items):
-#     res = []
-#     for item in items:
-#         res.append({
-#             "img_path": item.img_path,
-#             "ann_path": item.ann_path
-#         })
-#     sly.json.dump_json_file(res, path)
+def split_videos_randomly_by_counts(train_count, val_count):
+    train_videos_paths = []
+    val_videos_paths = []
+
+    counts = {'train': train_count,
+              'val': val_count}
+
+    ds_paths = get_ds_paths()
+    for ds_path in ds_paths:
+
+        train_videos_paths_temp, \
+        val_videos_paths_temp = get_video_paths_by_ds_and_counts(counts, ds_path)
+
+        train_videos_paths.extend(train_videos_paths_temp)
+        val_videos_paths.extend(val_videos_paths_temp)
+
+    return train_videos_paths, val_videos_paths
+
+
+def get_video_paths_by_ds_and_counts(counts, ds_path):
+    train_videos_paths = []
+    val_videos_paths = []
+
+    video_names = [name for name in os.listdir(ds_path) if os.path.isdir(os.path.join(ds_path, name))]
+    for video_name in video_names:
+        if random.choice([True, False]):
+            if counts['train'] > 0:
+                train_videos_paths.append(video_name)
+                counts['train'] -= 1
+            elif counts['val'] > 0:
+                val_videos_paths.append(video_name)
+                counts['val'] -= 1
+        else:
+            if counts['val'] > 0:
+                val_videos_paths.append(video_name)
+                counts['val'] -= 1
+            elif counts['train'] > 0:
+                train_videos_paths.append(video_name)
+                counts['train'] -= 1
+
+    return [os.path.join(ds_path, curr_video_name) for curr_video_name in train_videos_paths],\
+           [os.path.join(ds_path, curr_video_name) for curr_video_name in val_videos_paths]
+
+
+def split_videos_by_datasets(train_datasets_names, val_datasets_names):
+    train_videos_paths = []
+    val_videos_paths = []
+
+    ds_paths = get_ds_paths()
+
+    for ds_path in ds_paths:
+        if ds_path.split('/')[-1] in train_datasets_names:
+            train_videos_paths.extend(get_video_paths_by_ds_and_counts({'train': 9999,
+                                                                        'val': 0}, ds_path)[0])
+        if ds_path.split('/')[-1] in val_datasets_names:
+            val_videos_paths.extend(get_video_paths_by_ds_and_counts({'train': 0,
+                                                                      'val': 9999}, ds_path)[1])
+
+    return train_videos_paths, val_videos_paths
+
+
+def get_ds_paths(projects_ids=None):
+    ds_paths = []
+
+    input_data_path = os.path.join(g.my_app.data_dir, 'input_data')
+    projects_ids = sorted(
+        [name for name in os.listdir(input_data_path) if os.path.isdir(os.path.join(input_data_path, name))])
+
+    for project_id in projects_ids:
+        project_path = os.path.join(input_data_path, project_id)
+        dataset_names = [name for name in os.listdir(project_path) if os.path.isdir(os.path.join(project_path, name))]
+
+        for ds_name in dataset_names:
+            ds_paths.append(os.path.join(project_path, ds_name))
+
+    return ds_paths
 
 
 @g.my_app.callback("create_splits")
@@ -99,17 +175,18 @@ def verify_train_val_sets(train_set, val_set):
 @g.my_app.ignore_errors_and_show_dialog_window()
 def create_splits(api: sly.Api, task_id, context, state, app_logger):
     step_done = False
-    global train_set, val_set
+    train_videos_paths = None
+    val_videos_paths = None
     try:
         api.task.set_field(task_id, "state.splitInProgress", True)
-        train_set, val_set = get_train_val_sets(g.project_dir, state)
-        sly.logger.info(f"Train set: {len(train_set)} videos")
-        sly.logger.info(f"Val set: {len(val_set)} videos")
-        verify_train_val_sets(train_set, val_set)
+        train_videos_paths, val_videos_paths = get_train_val_sets(g.project_dir, state)
+        sly.logger.info(f"Train set: {len(train_videos_paths)} videos")
+        sly.logger.info(f"Val set: {len(val_videos_paths)} videos")
+        verify_train_val_sets(train_videos_paths, val_videos_paths)
         step_done = True
     except Exception as e:
-        train_set = None
-        val_set = None
+        train_videos_paths = None
+        val_videos_paths = None
         step_done = False
         raise e
     finally:
@@ -117,16 +194,16 @@ def create_splits(api: sly.Api, task_id, context, state, app_logger):
         fields = [
             {"field": "state.splitInProgress", "payload": False},
             {"field": f"data.done2", "payload": step_done},
-            {"field": f"data.trainVideosCount", "payload": None if train_set is None else len(train_set)},
-            {"field": f"data.valVideosCount", "payload": None if val_set is None else len(val_set)},
+            {"field": f"data.trainVideosCount", "payload": None if train_videos_paths is None else len(train_videos_paths)},
+            {"field": f"data.valVideosCount", "payload": None if val_videos_paths is None else len(val_videos_paths)},
         ]
         if step_done is True:
             fields.extend([
                 {"field": "state.collapsed3", "payload": False},
                 {"field": "state.disabled3", "payload": False},
                 {"field": "state.activeStep", "payload": 3},
+                {"field": "state.trainVideosPaths", "payload": train_videos_paths, "append": True, "recursive": False},
+                {"field": "state.valVideosPaths", "payload": val_videos_paths, "append": True, "recursive": False},
+
             ])
         g.api.app.set_fields(g.task_id, fields)
-
-    # save_set_to_json(os.path.join(g.project_dir, "train_set.json"), train_set)
-    # save_set_to_json(os.path.join(g.project_dir, "val_set.json"), val_set)

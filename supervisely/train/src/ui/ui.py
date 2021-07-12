@@ -34,21 +34,26 @@ def restart(api: sly.Api, task_id, context, state, app_logger):
     data = {}
     state = {}
 
-    if restart_from_step <= 6:
-        if restart_from_step == 6:
+    if restart_from_step <= 2:
+        if restart_from_step == 2:
+            splits.restart(data, state)
+        else:
+            splits.init(data, state)
+    if restart_from_step <= 3:
+        if restart_from_step == 3:
             model_architectures.restart(data, state)
         else:
             model_architectures.init(data, state)
-    if restart_from_step <= 7:
-        if restart_from_step == 7:
+    if restart_from_step <= 4:
+        if restart_from_step == 4:
             hyperparameters.restart(data, state)
         else:
             hyperparameters.init(data, state)
-    if restart_from_step <= 8:
-        if restart_from_step == 8:
-            hyperparameters_python.restart(data, state)
-        else:
-            hyperparameters_python.init(data, state)
+    # if restart_from_step <= 8:
+        # if restart_from_step == 8:
+        #     hyperparameters_python.restart(data, state)
+        # else:
+        #     hyperparameters_python.init(data, state)
 
     fields = [
         {"field": "data", "payload": data, "append": True, "recursive": False},

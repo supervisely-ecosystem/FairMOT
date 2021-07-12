@@ -104,7 +104,7 @@ def init(data, state):
 
 
 def restart(data, state):
-    data["done6"] = False
+    data["done3"] = False
     # state["collapsed6"] = True
     # state["disabled6"] = True
 

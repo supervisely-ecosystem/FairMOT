@@ -48,9 +48,40 @@
                 </el-table-column>
             </el-table>
         </el-tab-pane>
-        <el-tab-pane name="tags" :disabled="data.done2">
-            <el-radio slot="label" v-model="state.splitMethod" label="tags" :disabled="data.done2">
-                Based on image tags
+        <el-tab-pane name="datasets" :disabled="data.done2">
+            <el-radio slot="label" v-model="state.splitMethod" label="datasets" :disabled="data.done2">
+                Based on datasets
+                <div>Select one or several datasets for every split</div>
+            </el-radio>
+            <sly-field title="Notice: How to make equal splits"
+                       description="Choose the same dataset(s) for train/validation to make splits equal. Can be used for debug
+                                    and for tiny projects">
+                <sly-icon slot="icon" :options="{ color: '#fba607', bgColor: '#ffe9da', rounded: false }">
+                    <i class="zmdi zmdi-info"></i>
+                </sly-icon>
+            </sly-field>
+            <sly-field title="Train dataset(s)"
+                       description="all videos in selected dataset(s) are considered as training set">
+                <sly-select-dataset
+                        :disabled="data.done2"
+                        :project-id="data.projectId"
+                        :datasets.sync="state.trainDatasets"
+                        :options="{'multiple': true, 'showLabel': false}">
+                </sly-select-dataset>
+            </sly-field>
+            <sly-field title="Validation dataset(s)"
+                       description="all videos in selected dataset(s) are considered as validation set">
+                <sly-select-dataset
+                        :disabled="data.done2"
+                        :project-id="data.projectId"
+                        :datasets.sync="state.valDatasets"
+                        :options="{'multiple': true, 'showLabel': false}">
+                </sly-select-dataset>
+            </sly-field>
+        </el-tab-pane>
+        <el-tab-pane name="tags" :disabled="true">
+            <el-radio slot="label" v-model="state.splitMethod" label="tags" :disabled="true">
+                Based on videos tags
                 <div>videos should have assigned train or val tag</div>
             </el-radio>
             <sly-field title="Notice 1: How to create train/val splits based on tags"
@@ -95,37 +126,7 @@
                 </el-select>
             </sly-field>
         </el-tab-pane>
-        <el-tab-pane name="datasets" :disabled="data.done2">
-            <el-radio slot="label" v-model="state.splitMethod" label="datasets" :disabled="data.done2">
-                Based on datasets
-                <div>Select one or several datasets for every split</div>
-            </el-radio>
-            <sly-field title="Notice: How to make equal splits"
-                       description="Choose the same dataset(s) for train/validation to make splits equal. Can be used for debug
-                                    and for tiny projects">
-                <sly-icon slot="icon" :options="{ color: '#fba607', bgColor: '#ffe9da', rounded: false }">
-                    <i class="zmdi zmdi-info"></i>
-                </sly-icon>
-            </sly-field>
-            <sly-field title="Train dataset(s)"
-                       description="all videos in selected dataset(s) are considered as training set">
-                <sly-select-dataset
-                        :disabled="data.done2"
-                        :project-id="data.projectId"
-                        :datasets.sync="state.trainDatasets"
-                        :options="{'multiple': true, 'showLabel': false}">
-                </sly-select-dataset>
-            </sly-field>
-            <sly-field title="Validation dataset(s)"
-                       description="all videos in selected dataset(s) are considered as validation set">
-                <sly-select-dataset
-                        :disabled="data.done2"
-                        :project-id="data.projectId"
-                        :datasets.sync="state.valDatasets"
-                        :options="{'multiple': true, 'showLabel': false}">
-                </sly-select-dataset>
-            </sly-field>
-        </el-tab-pane>
+
     </el-tabs>
 
     <el-button

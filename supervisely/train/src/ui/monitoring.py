@@ -2,16 +2,23 @@ import os
 import supervisely_lib as sly
 from sly_train_progress import init_progress
 import sly_globals as g
+
+from sly_train_progress import _update_progress_ui
+from sly_train_args import init_script_arguments
+from functools import partial
+
+import shutil
+
 # from tools.train import main as mm_train
 
 _open_lnk_name = "open_app.lnk"
 
 
 def init(data, state):
+    init_progress("TrainInfo", data)
     init_progress("Epoch", data)
     init_progress("Iter", data)
     init_progress("UploadDir", data)
-    init_progress("InputVideo", data)
 
     data["eta"] = None
 
@@ -79,11 +86,6 @@ def _save_link_to_ui(local_dir, app_url):
         print(app_url, file=text_file)
 
 
-from sly_train_progress import _update_progress_ui
-from sly_train_args import init_script_arguments
-from functools import partial
-
-
 def upload_artifacts_and_log_progress():
     _save_link_to_ui(g.artifacts_dir, g.my_app.app_url)
 
@@ -97,9 +99,36 @@ def upload_artifacts_and_log_progress():
     progress = sly.Progress("Upload directory with training artifacts to Team Files", 0, is_size=True)
     progress_cb = partial(upload_monitor, api=g.api, task_id=g.task_id, progress=progress)
 
-    remote_dir = f"/mmclassification/{g.task_id}_{g.project_info.name}"
+    remote_dir = f"/fairMOT/{g.task_id}_{g.project_info.name}"
     res_dir = g.api.file.upload_directory(g.team_id, g.artifacts_dir, remote_dir, progress_size_cb=progress_cb)
     return res_dir
+
+
+def organize_data(state):
+    train_videos_paths = state['trainVideosPaths']
+    val_videos_paths = state['valVideosPaths']
+
+    organize_in_mot_format(video_paths=train_videos_paths, is_train=True)
+    organize_in_mot_format(video_paths=val_videos_paths, is_train=False)
+
+
+def organize_in_mot_format(video_paths=None, is_train=True):
+    working_dir = 'train' if is_train else 'test'
+
+    mot_general_dir = os.path.join(g.my_app.data_dir, 'data', 'SLY_MOT')
+    mot_images_path = os.path.join(mot_general_dir, f'images/{working_dir}')
+    os.makedirs(mot_images_path, exist_ok=True)
+
+    labels_with_ids_path = os.path.join(mot_general_dir, 'labels_with_ids/train')
+    os.makedirs(labels_with_ids_path, exist_ok=True)
+
+    for video_index, video_path in enumerate(video_paths):
+        split_path = video_path.split('/')
+        project_id = split_path[-3]
+        ds_name = split_path[-2]
+
+        destination = os.path.join(mot_images_path, f'{project_id}_{ds_name}_{video_index}')
+        # shutil.move(video_path, destination)
 
 
 @g.my_app.callback("train")
@@ -109,8 +138,10 @@ def train(api: sly.Api, task_id, context, state, app_logger):
     try:
         sly.json.dump_json_file(state, os.path.join(g.info_dir, "ui_state.json"))
 
+
+        organize_data(state)
         init_script_arguments(state)
-        mm_train()
+        # fair_mot_train()
 
         # hide progress bars and eta
         fields = [
@@ -138,3 +169,5 @@ def train(api: sly.Api, task_id, context, state, app_logger):
 
     # stop application
     g.my_app.stop()
+
+

@@ -11,7 +11,15 @@
     >
         <i class="zmdi zmdi-play mr5"></i> Train
     </el-button>
-    <div v-if="data.outputUrl">
+
+    <div v-if="data.progressTrainInfo" class="mt10">
+        <div style="color: #20a0ff">
+            {{data.progressTrainInfo}}: {{data.progressCurrentTrainInfo}} / {{data.progressTotalTrainInfo}}
+        </div>
+        <el-progress :percentage="data.progressPercentTrainInfo"></el-progress>
+    </div>
+
+    <div v-if="data.outputUrl" class="mt15">
         <sly-field title="Training artifacts"
                    description="Training artifacts has been uploaded to Team Files">
             <a slot="title" target="_blank" :href="`${data.outputUrl}`">{{data.outputName}}</a>
