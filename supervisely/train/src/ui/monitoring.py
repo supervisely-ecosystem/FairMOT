@@ -110,7 +110,7 @@ def train(api: sly.Api, task_id, context, state, app_logger):
         sly.json.dump_json_file(state, os.path.join(g.info_dir, "ui_state.json"))
 
         init_script_arguments(state)
-        # mm_train()
+        mm_train()
 
         # hide progress bars and eta
         fields = [

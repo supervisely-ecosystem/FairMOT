@@ -1,10 +1,11 @@
 import supervisely_lib as sly
 import sly_globals as g
-import input_train_validation as input_project
+import input_train as input_project
 
 
 import architectures as model_architectures
 import hyperparameters as hyperparameters
+import splits as splits
 
 import monitoring as monitoring
 # import artifacts as artifacts
@@ -15,10 +16,11 @@ def init(data, state):
     state["activeStep"] = 1
     state["restartFrom"] = None
 
-    input_project.init(data, state)
+    input_project.init(data, state)  # 1 stage
 
-    model_architectures.init(data, state)
-    hyperparameters.init(data, state)
+    splits.init(data, state)
+    model_architectures.init(data, state)  # 3 stage
+    hyperparameters.init(data, state)  # 4 stage
 
     monitoring.init(data, state)
     # artifacts.init(data)

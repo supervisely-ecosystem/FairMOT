@@ -15,6 +15,7 @@ from models.data_parallel import DataParallel
 from logger import Logger
 from datasets.dataset_factory import get_dataset
 from trains.train_factory import train_factory
+from test_det import test_det
 
 
 def main(opt):
@@ -74,6 +75,9 @@ def main(opt):
         if opt.val_intervals > 0 and epoch % opt.val_intervals == 0:
             save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(mark)),
                        epoch, model, optimizer)
+            with torch.no_grad():
+                opt.load_model = os.path.join(opt.save_dir, 'model_{}.pth'.format(mark))
+                test_det(opt, batch_size=4)
         else:
             save_model(os.path.join(opt.save_dir, 'model_last.pth'),
                        epoch, model, optimizer)
