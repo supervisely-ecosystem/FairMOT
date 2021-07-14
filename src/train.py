@@ -17,6 +17,20 @@ from datasets.dataset_factory import get_dataset
 from trains.train_factory import train_factory
 from test_det import test_det
 
+from sly_train_progress import get_progress_cb, reset_progress, init_progress  # SLY CODE
+import sly_train_renderer  # SLY CODE
+
+
+
+
+def get_n_params(model):
+    pp=0
+    for p in list(model.parameters()):
+        nn=1
+        for s in list(p.size()):
+            nn = nn*s
+        pp += nn
+    return pp
 
 def main(opt):
     torch.manual_seed(opt.seed)
@@ -24,6 +38,8 @@ def main(opt):
 
     print('Setting up data...')
     Dataset = get_dataset(opt.dataset, opt.task)
+
+    print(os.listdir('./'))
     f = open(opt.data_cfg)
     data_config = json.load(f)
     trainset_paths = data_config['train']
@@ -42,7 +58,9 @@ def main(opt):
     print('Creating model...')
     model = create_model(opt.arch, opt.heads, opt.head_conv)
     optimizer = torch.optim.Adam(model.parameters(), opt.lr)
+    print(get_n_params(model))
     start_epoch = 0
+
 
     # Get dataloader
 
@@ -64,7 +82,11 @@ def main(opt):
         model, optimizer, start_epoch = load_model(
             model, opt.load_model, trainer.optimizer, opt.resume, opt.lr, opt.lr_step)
 
+    sly_epoch_progress = get_progress_cb("Epoch", "Epoch", (opt.num_epochs - start_epoch), min_report_percent=1)  # SLY CODE
+
     for epoch in range(start_epoch + 1, opt.num_epochs + 1):
+
+
         mark = epoch if opt.save_all else 'last'
         log_dict_train, _ = trainer.train(epoch, train_loader)
         logger.write('epoch: {} |'.format(epoch))
@@ -73,25 +95,35 @@ def main(opt):
             logger.write('{} {:8f} | '.format(k, v))
 
         if opt.val_intervals > 0 and epoch % opt.val_intervals == 0:
-            save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(mark)),
+            save_model(os.path.join(opt.save_dir, 'model_validation.pth'),
                        epoch, model, optimizer)
             with torch.no_grad():
-                opt.load_model = os.path.join(opt.save_dir, 'model_{}.pth'.format(mark))
-                test_det(opt, batch_size=4)
+                opt.load_model = os.path.join(opt.save_dir, 'model_validation.pth')
+                mean_map, mean_r, mean_p = test_det(opt, batch_size=opt.master_batch_size)  # SLY CODE
+                sly_train_renderer.update_charts(epoch - 1,
+                                                 dict(zip([
+                                                     "val_map",
+                                                     "val_recall",
+                                                     "val_precision",
+                                                 ], [mean_map, mean_r, mean_p])))  # SLY CODE
+
+
         else:
             save_model(os.path.join(opt.save_dir, 'model_last.pth'),
                        epoch, model, optimizer)
         logger.write('\n')
         if epoch in opt.lr_step:
-            save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(epoch)),
-                       epoch, model, optimizer)
             lr = opt.lr * (0.1 ** (opt.lr_step.index(epoch) + 1))
             print('Drop LR to', lr)
             for param_group in optimizer.param_groups:
                 param_group['lr'] = lr
-        if epoch % 1 == 0 or epoch >= 25:
+        if opt.save_interval > 0 and epoch % opt.save_interval == 0: # SLY CODE
             save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(epoch)),
                        epoch, model, optimizer)
+
+        sly_epoch_progress(1)  # SLY CODE
+
+    reset_progress('Epoch')  # SLY CODE
     logger.close()
 
 

@@ -15,39 +15,33 @@ def get_models_list():
     res = [
         {
             "model": "dla_34",
-            # "params": "132.86",
+            "params": "20349711",
             # "flops": "7.63",
             # "top1": "68.75",
             # "top5": "88.87"
         },
         {
             "model": "resdcn_34",
-            # "params": "132.86",
+            "params": "25054808",
             # "flops": "7.63",
             # "top1": "68.75",
             # "top5": "88.87"
         },
         {
             "model": "resdcn_50",
-            # "params": "132.86",
+            "params": "31190360",
             # "flops": "7.63",
             # "top1": "68.75",
             # "top5": "88.87"
         },
         {
             "model": "resfpndcn_34",
-            # "params": "132.86",
+            "params": "26823674",
             # "flops": "7.63",
             # "top1": "68.75",
             # "top5": "88.87"
         },
-        {
-            "model": "hrnet_18",
-            # "params": "132.86",
-            # "flops": "7.63",
-            # "top1": "68.75",
-            # "top5": "88.87"
-        },
+
     ]
     # _validate_models_configs(res)
     return res
@@ -57,9 +51,6 @@ def get_table_columns():
     return [
         {"key": "model", "title": "Model", "subtitle": None},
         {"key": "params", "title": "Params (M)", "subtitle": None},
-        {"key": "flops", "title": "Flops (G)", "subtitle": None},
-        {"key": "top1", "title": "Top-1 (%)", "subtitle": None},
-        {"key": "top5", "title": "Top-5 (%)", "subtitle": None},
     ]
 
 
@@ -95,12 +86,12 @@ def init(data, state):
     state["selectedModel"] = "dla_34"  # "ResNet-50"
     state["weightsInitialization"] = "imagenet"  # "custom"  # "imagenet" #@TODO: for debug
 
-    state["collapsed6"] = not True
-    state["disabled6"] = not True
-    init_progress(6, data)
+    state["collapsed3"] = True
+    state["disabled3"] = True
+    init_progress(3, data)
 
     state["weightsPath"] = ""# "/mmclassification/5687_synthetic products v2_003/checkpoints/epoch_10.pth"  #@TODO: for debug
-    data["done6"] = False
+    data["done3"] = False
 
 
 def restart(data, state):
@@ -152,9 +143,10 @@ def apply_model(api: sly.Api, task_id, context, state, app_logger):
     #     raise e
 
     fields = [
-        {"field": "data.done6", "payload": True},
-        {"field": "state.collapsed7", "payload": False},
-        {"field": "state.disabled7", "payload": False},
-        {"field": "state.activeStep", "payload": 7},
+        {"field": "data.done3", "payload": True},
+        {"field": "state.collapsed4", "payload": False},
+        {"field": "state.disabled4", "payload": False},
+        {"field": "state.activeStep", "payload": 4},
     ]
+    api.app.set_field(task_id, "data.scrollIntoView", f"step{4}")
     g.api.app.set_fields(g.task_id, fields)

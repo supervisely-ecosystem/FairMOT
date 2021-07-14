@@ -52,8 +52,8 @@ def init(data, state):
     data["trainVideosCount"] = None
     data["valVideosCount"] = None
     data["done2"] = False
-    state["collapsed2"] = not True
-    state["disabled2"] = not True
+    state["collapsed2"] = True
+    state["disabled2"] = True
 
     state["trainVideosPaths"] = None
     state["valVideosPaths"] = None
@@ -206,4 +206,5 @@ def create_splits(api: sly.Api, task_id, context, state, app_logger):
                 {"field": "state.valVideosPaths", "payload": val_videos_paths, "append": True, "recursive": False},
 
             ])
+            g.api.app.set_field(g.task_id, "data.scrollIntoView", f"step{3}")
         g.api.app.set_fields(g.task_id, fields)

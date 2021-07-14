@@ -49,11 +49,12 @@ def restart(api: sly.Api, task_id, context, state, app_logger):
             hyperparameters.restart(data, state)
         else:
             hyperparameters.init(data, state)
-    # if restart_from_step <= 8:
-        # if restart_from_step == 8:
-        #     hyperparameters_python.restart(data, state)
-        # else:
-        #     hyperparameters_python.init(data, state)
+    if restart_from_step <= 5:
+        if restart_from_step == 5:
+            monitoring.restart(data, state)
+        else:
+            monitoring.init(data, state)
+
 
     fields = [
         {"field": "data", "payload": data, "append": True, "recursive": False},

@@ -46,12 +46,14 @@ class opts(object):
                                  help='not display time during training.')
         self.parser.add_argument('--save_all', action='store_true',
                                  help='save model to disk every 5 epochs.')
+
         self.parser.add_argument('--metric', default='loss',
                                  help='main metric to save best model')
         self.parser.add_argument('--vis_thresh', type=float, default=0.5,
                                  help='visualization threshold.')
 
         # model
+
         self.parser.add_argument('--arch', default='dla_34',
                                  help='model architecture. Currently tested'
                                       'resdcn_34 | resdcn_50 | resfpndcn_34 |'
@@ -93,6 +95,9 @@ class opts(object):
                                       'test on test set')
 
         # test
+        self.parser.add_argument('--save_interval', type=int, default=5,
+                                 help='save model interval')
+
         self.parser.add_argument('--K', type=int, default=500,
                                  help='max number of output objects.')
         self.parser.add_argument('--not_prefetch_test', action='store_true',

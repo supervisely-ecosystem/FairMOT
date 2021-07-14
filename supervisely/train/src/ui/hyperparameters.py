@@ -6,19 +6,24 @@ import sly_globals as g
 def init(data, state):
     # system
     state["expId"] = 'output_exp_name'
-    state["gpusId"] = '0'
-    state["workersPerGPU"] = 2
+    state["gpus"] = '0'
+    state["numWorkers"] = 2
 
     # model
     state["headConv"] = -1
 
     # train
-    state["epochs"] = 5
+    state["numEpochs"] = 50
     state["lr"] = 1e-4
     state["lrStep"] = 20
     state["batchSize"] = 5
     state["masterBatchSize"] = 5
-    state["valInterval"] = 1
+    state["saveInterval"] = 5
+
+    # validation
+    state["valInterval"] = 5
+    state["K"] = 500
+    state["detThres"] = 0.4
 
     # loss
     state["hmWeight"] = 1
@@ -29,13 +34,13 @@ def init(data, state):
     state["ltrb"] = True
 
     # stepper
-    state["collapsed7"] = True
-    state["disabled7"] = True
-    state["done7"] = False
+    state["collapsed4"] = True
+    state["disabled4"] = True
+    data["done4"] = False
 
 
 def restart(data, state):
-    data["done7"] = False
+    data["done4"] = False
 
 
 @g.my_app.callback("use_hyp")
@@ -48,4 +53,5 @@ def use_hyp(api: sly.Api, task_id, context, state, app_logger):
         {"field": "state.disabled5", "payload": False},
         {"field": "state.activeStep", "payload": 5},
     ]
+    api.app.set_field(task_id, "data.scrollIntoView", f"step{5}")
     g.api.app.set_fields(g.task_id, fields)

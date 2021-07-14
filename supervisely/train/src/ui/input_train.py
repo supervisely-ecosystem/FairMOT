@@ -27,6 +27,7 @@ def init(data, state):
 
     init_progress(progress_index, data)
     init_progress("InputVideo", data)
+    init_progress("InputFrames", data)
 
     data["done1"] = False
     state["collapsed1"] = False
@@ -91,6 +92,7 @@ def download_project(project_ids):
         {"field": f"state.disabled2", "payload": False},
         {"field": f"state.activeStep", "payload": 2},
     ]
+    g.api.app.set_field(g.task_id, "data.scrollIntoView", f"step{2}")
     g.api.app.set_fields(g.task_id, fields)
 
 
@@ -125,6 +127,7 @@ def from_sl_to_MOT(projects_ids):
         download_progress_dataset = get_progress_cb("InputDataset", "Current dataset", len(project_datasets))
         for dataset in project_datasets:
             videos = g.api.video.get_list(dataset.id)
+            download_progress_videos = get_progress_cb("InputVideo", "Current video", len(videos))
             for batch in sly.batched(videos, batch_size=10):
                 for video_info in batch:
 
@@ -161,7 +164,9 @@ def from_sl_to_MOT(projects_ids):
                     for idx, curr_video_obj in enumerate(ann.objects):
                         id_to_video_obj[curr_video_obj] = idx + 1
 
-                    download_progress_frames = get_progress_cb("InputVideo", "Downloading frames", len(ann.frames))
+
+                    download_progress_frames = get_progress_cb("InputFrames", "Downloading frames",
+                                                               len(ann.frames))
 
                     for frame_index, frame in enumerate(ann.frames):
                         for figure in frame.figures:
@@ -193,10 +198,12 @@ def from_sl_to_MOT(projects_ids):
                             break
                         g.api.video.frame.download_path(video_info.id, frame_index, image_path)
                         download_progress_frames(1)  # updating progress
+                    download_progress_videos(1)
             download_progress_dataset(1)
         download_progress_project(1)
 
-    reset_progress("InputVideo")
-    reset_progress("InputDataset")
     reset_progress("InputProject")
+    reset_progress("InputDataset")
+    reset_progress("InputVideo")
+    reset_progress("InputFrames")
 

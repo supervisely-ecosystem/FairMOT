@@ -2,7 +2,7 @@
           subtitle="Task progress, detailed logs, metrics charts, and other visualizations"
           :options="{collapsable: true}"
           :collapsed.sync="state.collapsed4"
-          :disabled="{disabled: state.disabled4, message: 'Finish previous steps before configure training'}"
+          :disabled="{disabled: state.disabled4, message: 'complete stage 3'}"
           ref="step4"
 >
 
@@ -17,7 +17,7 @@
 
         </sly-field>
         <hr class="mt10 mb10" style="border: 0; border-top: 1px solid rgba(0,0,0,.12);"/>
-<!--        <div style="border-top: 1px dashed #cdcdcd;"></div>-->
+        <!--        <div style="border-top: 1px dashed #cdcdcd;"></div>-->
     </div>
 
     <sly-field title="Experiment name">
@@ -28,9 +28,9 @@
 
 
     <sly-field title="GPU device id"
-               description="Run nvidia-smi or check agent page to see how many devices your machine has or keep by default">
+               description="run nvidia-smi or check agent page to see how many devices your machine has or keep by default">
         <!--        <el-input v-model="state.gpusId" style="width:250px;"></el-input>-->
-        <el-select v-model="state.gpusId" :disabled="data.done4">
+        <el-select v-model="state.gpus" :disabled="data.done4">
             <el-option key="0" label="0" value="0"></el-option>
             <!--            <el-option key="1" label="1" value="1"></el-option>-->
             <!--            <el-option key="2" label="2" value="2"></el-option>-->
@@ -38,8 +38,8 @@
         </el-select>
     </sly-field>
     <sly-field title="Number of workers per GPU"
-               description="Maximum number of dataloader workers, use 0 for debug">
-        <el-input-number v-model="state.workersPerGPU" :min="0" :disabled="data.done4"></el-input-number>
+               description="maximum number of dataloader workers">
+        <el-input-number v-model="state.numWorkers" :min="1" :disabled="data.done4"></el-input-number>
     </sly-field>
 
 
@@ -54,11 +54,11 @@
 
         </sly-field>
         <hr class="mt10 mb10" style="border: 0; border-top: 1px solid rgba(0,0,0,.12);"/>
-<!--        <div style="border-top: 1px dashed #CDCDCDFF;"></div>-->
+        <!--        <div style="border-top: 1px dashed #CDCDCDFF;"></div>-->
     </div>
 
     <sly-field title="Number of epochs">
-        <el-input-number v-model="state.epochs" :min="1" :max="10000" :disabled="data.done4"></el-input-number>
+        <el-input-number v-model="state.numEpochs" :min="1" :max="10000" :disabled="data.done4"></el-input-number>
     </sly-field>
     <sly-field title="Learning rate">
         <el-input-number v-model="state.lr" :min="0" :step="0.0005" :debounce="1000"
@@ -79,14 +79,56 @@
         <el-input-number v-model="state.batchSize" :min="4" :disabled="data.done4"></el-input-number>
     </sly-field>
 
+    <sly-field title="Save model interval"
+               description="save model every">
+        <div class="fflex">
+            <!--            <span class="mr5">Evaluate validation set every </span>-->
+            <el-input-number v-model="state.saveInterval" :min="1" :max="state.epochs"
+                             :disabled="data.done4"></el-input-number>
+            <span class="ml5">epoch</span>
+        </div>
+    </sly-field>
+
+
+    <div style="padding-top: 15px; padding-bottom: 10px">
+        <sly-field title="Validation"
+
+                   description="define validation parameters">
+
+            <sly-icon slot="icon" :options="{ color: '#4aa0f8', bgColor: '#ebf4fc', rounded: false }">
+                <i class="zmdi zmdi-ruler"></i>
+            </sly-icon>
+
+        </sly-field>
+        <hr class="mt10 mb10" style="border: 0; border-top: 1px solid rgba(0,0,0,.12);"/>
+        <!--        <div style="border-top: 1px dashed #CDCDCDFF;"></div>-->
+    </div>
 
     <sly-field title="Validation interval"
-               description="Evaluate model every">
+               description="evaluate model every">
         <div class="fflex">
             <!--            <span class="mr5">Evaluate validation set every </span>-->
             <el-input-number v-model="state.valInterval" :min="1" :max="state.epochs"
                              :disabled="data.done4"></el-input-number>
             <span class="ml5">epoch</span>
+        </div>
+    </sly-field>
+
+    <sly-field title="K"
+               description="max number of output objects">
+        <div class="fflex">
+            <!--            <span class="mr5">Evaluate validation set every </span>-->
+            <el-input-number v-model="state.K" :min="1" :max="500"
+                             :disabled="data.done4"></el-input-number>
+        </div>
+    </sly-field>
+
+    <sly-field title="Detection threshold"
+               description="boxes threshold on validation">
+        <div class="fflex">
+            <!--            <span class="mr5">Evaluate validation set every </span>-->
+            <el-input-number v-model="state.detThres" :min="0" :max="1" :step="0.1"
+                             :disabled="data.done4"></el-input-number>
         </div>
     </sly-field>
 
@@ -101,24 +143,24 @@
 
         </sly-field>
         <hr class="mt10 mb10" style="border: 0; border-top: 1px solid rgba(0,0,0,.12);"/>
-<!--        <div style="border-top: 1px dashed #CDCDCDFF;"></div>-->
+        <!--        <div style="border-top: 1px dashed #CDCDCDFF;"></div>-->
     </div>
 
     <sly-field title="HM weight"
                description="loss weight for keypoint heatmaps">
-        <el-input-number v-model="state.hmWeight" :min="0" :disabled="data.done4"></el-input-number>
+        <el-input-number v-model="state.hmWeight" :min="0" :step="0.1" :disabled="data.done4"></el-input-number>
     </sly-field>
     <sly-field title="OFF weight"
                description="loss weight for keypoint local offsets">
-        <el-input-number v-model="state.offWeight" :min="0" :max="1" :disabled="data.done4"></el-input-number>
+        <el-input-number v-model="state.offWeight" :min="0" :max="1" :step="0.1" :disabled="data.done4"></el-input-number>
     </sly-field>
     <sly-field title="WH weight"
                description="loss weight for bounding box size">
-        <el-input-number v-model="state.whWeight" :min="0" :max="1" :disabled="data.done4"></el-input-number>
+        <el-input-number v-model="state.whWeight" :min="0" :max="1" :step="0.1" :disabled="data.done4"></el-input-number>
     </sly-field>
     <sly-field title="ID weight"
                description="loss weight for id">
-        <el-input-number v-model="state.idWeight" :min="0" :max="1" :disabled="data.done4"></el-input-number>
+        <el-input-number v-model="state.idWeight" :min="0" :max="1" :step="0.1" :disabled="data.done4"></el-input-number>
     </sly-field>
 
     <sly-field title="RE-ID dimension"
@@ -150,6 +192,6 @@
     <el-button type="warning" class="regular mt10" :plain="true"
                @click="state.restartFrom = 4;"
                v-if="data.done4 && !state.started">
-        <i class="zmdi zmdi-rotate-left mr5"></i> Change hyperparameters
+        <i class="zmdi zmdi-rotate-left mr5"></i> reselect
     </el-button>
 </sly-card>
