@@ -5,27 +5,18 @@ import random
 
 
 def restart(data, state):
-    data["done2"] = False
+    data["done3"] = False
 
 
-def init(data, state):
-    project_info = g.project_info
-    project_meta = g.project_meta
-
-    data["randomSplit"] = [
-        {"name": "train", "type": "success"},
-        {"name": "val", "type": "primary"},
-        {"name": "total", "type": "gray"},
-    ]
-    data["totalVideosCount"] = project_info.items_count
+def refresh_table(total_items_count):
 
     train_percent = 80
-    train_count = int(project_info.items_count / 100 * train_percent)
-    state["randomSplit"] = {
+    train_count = int(total_items_count / 100 * train_percent)
+    random_split_tab = {
         "count": {
-            "total": project_info.items_count,
+            "total": total_items_count,
             "train": train_count,
-            "val": project_info.items_count - train_count
+            "val": total_items_count - train_count
         },
         "percent": {
             "total": 100,
@@ -36,8 +27,28 @@ def init(data, state):
         "sliderDisabled": False,
     }
 
+    g.api.app.set_fields(g.task_id,
+        [
+            {'field': 'state.randomSplit', 'payload': random_split_tab},
+            {'field': 'data.totalVideosCount', 'payload': total_items_count},
+        ]
+    )
+
+
+def init(data, state):
+
     state["splitMethod"] = "random"
 
+    data["randomSplit"] = [
+        {"name": "train", "type": "success"},
+        {"name": "val", "type": "primary"},
+        {"name": "total", "type": "gray"},
+    ]
+
+    state["randomSplit"] = []
+    data['data.totalVideosCount'] = 0
+
+    # refresh_table(g.project_info.items_count)
     # state["trainTagName"] = ""
     # if project_meta.tag_metas.get("train") is not None:
     #     state["trainTagName"] = "train"
@@ -51,15 +62,15 @@ def init(data, state):
     state["splitInProgress"] = False
     data["trainVideosCount"] = None
     data["valVideosCount"] = None
-    data["done2"] = False
-    state["collapsed2"] = not True
-    state["disabled2"] = not True
+    data["done3"] = False
+    state["collapsed3"] = not True
+    state["disabled3"] = not True
 
     state["trainVideosPaths"] = None
     state["valVideosPaths"] = None
 
 
-def get_train_val_sets(project_dir, state):
+def get_train_val_sets(state):
     split_method = state["splitMethod"]
     if split_method == "random":
         train_count = state["randomSplit"]["count"]["train"]
@@ -101,7 +112,6 @@ def split_videos_randomly_by_counts(train_count, val_count):
 
     ds_paths = get_ds_paths()
     for ds_path in ds_paths:
-
         train_videos_paths_temp, \
         val_videos_paths_temp = get_video_paths_by_ds_and_counts(counts, ds_path)
 
@@ -114,8 +124,11 @@ def split_videos_randomly_by_counts(train_count, val_count):
 def get_video_paths_by_ds_and_counts(counts, ds_path):
     train_videos_paths = []
     val_videos_paths = []
+    class_label = g.api.app.get_field(g.task_id, 'state.selectedClass')
 
-    video_names = [name for name in os.listdir(ds_path) if os.path.isdir(os.path.join(ds_path, name))]
+    video_names = [name for name in os.listdir(ds_path) if  # filter videos by selected class
+                   len(g.get_files_paths(os.path.join(ds_path, name), [f'{class_label}.txt'])) > 0]
+
     for video_name in video_names:
         if random.choice([True, False]):
             if counts['train'] > 0:
@@ -132,7 +145,7 @@ def get_video_paths_by_ds_and_counts(counts, ds_path):
                 train_videos_paths.append(video_name)
                 counts['train'] -= 1
 
-    return [os.path.join(ds_path, curr_video_name) for curr_video_name in train_videos_paths],\
+    return [os.path.join(ds_path, curr_video_name) for curr_video_name in train_videos_paths], \
            [os.path.join(ds_path, curr_video_name) for curr_video_name in val_videos_paths]
 
 
@@ -179,7 +192,7 @@ def create_splits(api: sly.Api, task_id, context, state, app_logger):
     val_videos_paths = None
     try:
         api.task.set_field(task_id, "state.splitInProgress", True)
-        train_videos_paths, val_videos_paths = get_train_val_sets(g.project_dir, state)
+        train_videos_paths, val_videos_paths = get_train_val_sets(state)
         sly.logger.info(f"Train set: {len(train_videos_paths)} videos")
         sly.logger.info(f"Val set: {len(val_videos_paths)} videos")
         verify_train_val_sets(train_videos_paths, val_videos_paths)
@@ -193,18 +206,19 @@ def create_splits(api: sly.Api, task_id, context, state, app_logger):
         api.task.set_field(task_id, "state.splitInProgress", False)
         fields = [
             {"field": "state.splitInProgress", "payload": False},
-            {"field": f"data.done2", "payload": step_done},
-            {"field": f"data.trainVideosCount", "payload": None if train_videos_paths is None else len(train_videos_paths)},
+            {"field": f"data.done3", "payload": step_done},
+            {"field": f"data.trainVideosCount",
+             "payload": None if train_videos_paths is None else len(train_videos_paths)},
             {"field": f"data.valVideosCount", "payload": None if val_videos_paths is None else len(val_videos_paths)},
         ]
         if step_done is True:
             fields.extend([
-                {"field": "state.collapsed3", "payload": False},
-                {"field": "state.disabled3", "payload": False},
-                {"field": "state.activeStep", "payload": 3},
+                {"field": "state.collapsed4", "payload": False},
+                {"field": "state.disabled4", "payload": False},
+                {"field": "state.activeStep", "payload": 4},
                 {"field": "state.trainVideosPaths", "payload": train_videos_paths, "append": True, "recursive": False},
                 {"field": "state.valVideosPaths", "payload": val_videos_paths, "append": True, "recursive": False},
 
             ])
-            g.api.app.set_field(g.task_id, "data.scrollIntoView", f"step{3}")
+            g.api.app.set_field(g.task_id, "data.scrollIntoView", f"step{4}")
         g.api.app.set_fields(g.task_id, fields)

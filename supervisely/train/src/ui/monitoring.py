@@ -43,16 +43,16 @@ def init(data, state):
     data["previewPredLinks"] = []
     state["currEpochPreview"] = 1
 
-    state["collapsed5"] = not True
-    state["disabled5"] = not True
-    state["done5"] = False
+    state["collapsed6"] = not True
+    state["disabled6"] = not True
+    state["done6"] = False
 
     data["outputName"] = None
     data["outputUrl"] = None
 
 
 def restart(data, state):
-    data["done5"] = False
+    data["done6"] = False
 
 
 def init_chart(title, names, xs, ys, smoothing=None, yrange=None, decimals=None, xdecimals=None):
@@ -147,6 +147,16 @@ def dump_config(root_path):
         json.dump(mot_config, file)
 
 
+def remove_negative_labels(root_path):
+    class_label = g.api.app.get_field(g.task_id, 'state.selectedClass')
+
+    gt_files = g.get_files_paths(root_path, [f'.txt'])
+
+    for gt_file in gt_files:
+        if not gt_file.endswith(f'{class_label}.txt'):
+            os.remove(gt_file)
+
+
 def organize_data(state):
 
     root_path = f'{g.my_app.data_dir}/data/SLY_MOT'
@@ -156,6 +166,8 @@ def organize_data(state):
 
     organize_in_mot_format(video_paths=train_videos_paths, is_train=True)
     organize_in_mot_format(video_paths=val_videos_paths, is_train=False)
+
+    remove_negative_labels(root_path)
 
     gen_data_path(root_path)
     gen_labels(root_path)
@@ -173,23 +185,11 @@ def clean_exp_dir():
         shutil.rmtree(exp_dir)
 
 
-def get_files_paths(src_dir, extensions):
-    files_paths = []
-    for root, dirs, files in os.walk(src_dir):
-        for extension in extensions:
-            for file in files:
-                if file.endswith(extension):
-                    file_path = os.path.join(root, file)
-                    files_paths.append(file_path)
-
-    return files_paths
-
-
 def dump_info(state):
     exp_id = g.api.app.get_field(g.task_id, 'state.expId')
     checkpoints_dir = f"../exp/mot/{exp_id}/"
 
-    info_files_paths = get_files_paths(checkpoints_dir, ['.txt'])
+    info_files_paths = g.get_files_paths(checkpoints_dir, ['.txt'])
     for info_files_path in info_files_paths:
         destination = os.path.join(g.info_dir, info_files_path.split('/')[-1])
         shutil.move(info_files_path, destination)
@@ -288,7 +288,7 @@ def train(api: sly.Api, task_id, context, state, app_logger):
         fields = [
             {"field": "data.outputUrl", "payload": g.api.file.get_url(file_info.id)},
             {"field": "data.outputName", "payload": remote_dir},
-            {"field": "state.done5", "payload": True},
+            {"field": "state.done6", "payload": True},
             {"field": "state.trainStarted", "payload": False},
         ]
         # sly_train_renderer.send_fields({'data.eta': None})  # SLY CODE

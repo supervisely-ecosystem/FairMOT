@@ -102,9 +102,9 @@ def main(opt):
                                                      "val_recall",
                                                      "val_precision",
                                                  ], [mean_map, mean_r, mean_p])))  # SLY CODE
-            print(os.listdir(opt.save_dir))
-            os.remove(os.path.join(opt.save_dir, 'model_validation.pth'))
-            print(os.listdir(opt.save_dir))
+
+            os.remove(os.path.join(opt.save_dir, 'model_validation.pth'))  # SLY CODE
+
 
         else:
             save_model(os.path.join(opt.save_dir, 'model_last.pth'),

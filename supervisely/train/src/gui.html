@@ -25,9 +25,7 @@
         text-align: center;
         line-height: 20px;
         }
-        .beautiful-table.al td, .beautiful-table.al th {
-        text-align: left;
-        }
+
 
         #fairmot-train .el-tabs.el-tabs-cards { border-radius: 4px; box-shadow: none; }
         #fairmot-train .el-tabs.el-tabs-cards .el-tabs__header { background-color: #f6fafd; }
@@ -36,6 +34,23 @@
         #fairmot-train .el-tabs.el-tabs-cards .el-tabs__item { flex: 1; margin-bottom: -3px; padding: 9px 16px
         13px;
         height: auto; line-height: normal; border-radius: 4px; }
+
+        #fairmot-train .ultra-table .our-custom-leaf {
+        border: 0;
+        height: 50px;
+        text-transform: uppercase;
+        background: #f6fafd;
+
+        border-bottom: 1px solid #ebebeb;
+
+        }
+
+        #fairmot-train .ultra-table .our-custom-leaf div {
+        color: rgba(0,0,0,0.5);
+        font-weight: 700;
+        font-size: 0.9rem;
+        }
+
     </sly-style>
 
     <sly-stepper :active="state.activeStep">

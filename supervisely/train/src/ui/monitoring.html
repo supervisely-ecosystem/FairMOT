@@ -1,10 +1,10 @@
 <sly-card title="Training progress"
           subtitle="Task progress, detailed logs, metrics charts, and other visualizations"
-          ref="step5"
+          ref="step6"
           :options="{collapsable: true}"
-          :collapsed.sync="state.collapsed5"
-          :disabled="{disabled: state.disabled5, message: 'complete stage 4'}">
-    <el-button v-if="!state.done5"
+          :collapsed.sync="state.collapsed6"
+          :disabled="{disabled: state.disabled6, message: 'complete stage 4'}">
+    <el-button v-if="!state.done6"
                type="primary" class="regular"
                @click="state.trainStarted = true; command('train')"
                :loading="state.trainStarted === true"
@@ -28,7 +28,7 @@
     </div>
 
     <div v-if="data.progressUploadDir || data.progressTrainInfo || data.progressEpoch || data.progressIter" style="padding-top: 20px">
-        <div v-if="data.progressUploadDir && !data.outputUrl" class="mt10">
+        <div v-if="data.progressUploadDir && !data.outputUrl">
             <div style="color: #20a0ff">
                 {{data.progressUploadDir}}: {{data.progressCurrentUploadDir}} / {{data.progressTotalUploadDir}}
             </div>
@@ -61,7 +61,7 @@
         <b style="color: #20a0ff"><i class="zmdi zmdi-time-countdown mr5"></i>{{data.etaEpoch}} | {{data.etaIter}}</b>
     </sly-field>
 
-    <div class="mt15" v-if="state.trainStarted === true || state.done5">
+    <div class="mt15" v-if="state.trainStarted === true || state.done6">
         <hr class="mt10 mb15" style="border: 0; border-top: 1px solid rgba(0,0,0,.12);"/>
         <sly-field title="Smoothing" description="Change the smoothing of line charts">
             <sly-icon slot="icon" :options="{ color: '#4aa0f8', bgColor: '#ebf4fc', rounded: false }">
@@ -154,7 +154,7 @@
                             :max="data.previewPredLinks.length * state.valInterval"
                             :step="state.valInterval"
                             :disabled="data.previewPredLinks.length < 2"
-                            @change="command('previewByEpoch')"
+                            @input="command('previewByEpoch')"
 
                     >
 

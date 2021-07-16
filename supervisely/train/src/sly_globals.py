@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 import sys
 import supervisely_lib as sly
+import pickle
 
 
 my_app = sly.AppService()
@@ -16,7 +17,7 @@ project_info = api.project.get_info_by_id(project_id)
 if project_info is None:  # for debug
     raise ValueError(f"Project with id={project_id} not found")
 
-# sly.fs.clean_dir(my_app.data_dir)  # for debug
+sly.fs.clean_dir(my_app.data_dir)  # for debug
 
 project_dir = os.path.join(my_app.data_dir, "train_fairMOT")
 project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
@@ -45,3 +46,31 @@ ui_sources_dir = os.path.join(source_path, "ui")
 sly.logger.info(f"UI source directory: {ui_sources_dir}")
 sys.path.append(ui_sources_dir)
 sly.logger.info(f"Added to sys.path: {ui_sources_dir}")
+
+
+
+def dump_req(req_objects, filename):
+    save_path = os.path.join(my_app.data_dir, 'dumps')
+    os.makedirs(save_path, exist_ok=True)
+    save_path = os.path.join(save_path, filename)
+    with open(save_path, 'wb') as dump_file:
+        pickle.dump(req_objects, dump_file)
+
+
+def load_dumped(filename):
+    load_path = os.path.join(my_app.data_dir, 'dumps', filename)
+    with open(load_path, 'rb') as dumped:
+        return pickle.load(dumped)
+
+
+
+def get_files_paths(src_dir, extensions):
+    files_paths = []
+    for root, dirs, files in os.walk(src_dir):
+        for extension in extensions:
+            for file in files:
+                if file.endswith(extension):
+                    file_path = os.path.join(root, file)
+                    files_paths.append(file_path)
+
+    return files_paths

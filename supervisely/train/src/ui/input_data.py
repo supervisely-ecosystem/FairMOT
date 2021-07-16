@@ -18,6 +18,8 @@ _cache_base_filename = os.path.join(g.my_app.data_dir, "images_info")
 _cache_path = _cache_base_filename + ".db"
 _image_id_to_paths = {}
 
+object_ann_info = None
+
 
 def init(data, state):
     data["projectId"] = g.project_info.id
@@ -108,6 +110,8 @@ def from_sl_to_MOT(projects_ids):
     conf_tag_name = 'ignore_conf'
 
     download_progress_project = get_progress_cb("InputProject", "Current project", len(projects_ids))
+
+    projects_ann_info = {}
 
     for project_id in projects_ids:
         project = g.api.project.get_info_by_id(project_id)
@@ -203,10 +207,38 @@ def from_sl_to_MOT(projects_ids):
                         download_progress_frames(1)  # updating progress
                     download_progress_videos(1)
             download_progress_dataset(1)
+
+        projects_ann_info[project_id] = get_project_ann_info(project_id, all_ds=True)
+
         download_progress_project(1)
+
+    g.dump_req(projects_ann_info, 'ann_info.pkl')
+    # objects_ann_info = ann_info
 
     reset_progress("InputProject")
     reset_progress("InputDataset")
     reset_progress("InputVideo")
     reset_progress("InputFrames")
+
+
+def get_project_ann_info(project_id, dataset_names=None, all_ds=True):
+    ann_infos = {}
+
+    if all_ds:
+        dataset_ids = [ds.id for ds in g.api.dataset.get_list(project_id)]
+    else:
+        dataset_ids = [ds.id for ds in g.api.dataset.get_list(project_id) if ds.name in dataset_names]
+
+    sly_progress_ds = get_progress_cb("progressInputDataset", "Current dataset", len(dataset_ids))
+
+    for dataset_id in dataset_ids:
+        video_list = g.api.video.get_list(dataset_id)
+        video_ids = [video_info.id for video_info in video_list]
+        sly_progress_ann = get_progress_cb("progressInputVideo", "Download annotations", 1)
+
+        ann_infos[dataset_id] = g.api.video.annotation.download_bulk(dataset_id, video_ids)
+
+        sly_progress_ann(1)
+        sly_progress_ds(1)
+    return ann_infos
 

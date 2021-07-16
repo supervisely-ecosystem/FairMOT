@@ -1,6 +1,6 @@
 import supervisely_lib as sly
 import sly_globals as g
-import input_train as input_project
+import input_data as input_project
 
 
 import architectures as model_architectures

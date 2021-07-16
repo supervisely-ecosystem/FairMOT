@@ -34,13 +34,13 @@ def init(data, state):
     state["ltrb"] = True
 
     # stepper
-    state["collapsed4"] = not True
-    state["disabled4"] = not True
-    data["done4"] = False
+    state["collapsed5"] = not True
+    state["disabled5"] = not True
+    data["done5"] = False
 
 
 def restart(data, state):
-    data["done4"] = False
+    data["done5"] = False
 
 
 @g.my_app.callback("use_hyp")
@@ -48,10 +48,10 @@ def restart(data, state):
 @g.my_app.ignore_errors_and_show_dialog_window()
 def use_hyp(api: sly.Api, task_id, context, state, app_logger):
     fields = [
-        {"field": "data.done4", "payload": True},
-        {"field": "state.collapsed5", "payload": False},
-        {"field": "state.disabled5", "payload": False},
-        {"field": "state.activeStep", "payload": 5},
+        {"field": "data.done5", "payload": True},
+        {"field": "state.collapsed6", "payload": False},
+        {"field": "state.disabled6", "payload": False},
+        {"field": "state.activeStep", "payload": 6},
     ]
-    api.app.set_field(task_id, "data.scrollIntoView", f"step{5}")
+    api.app.set_field(task_id, "data.scrollIntoView", f"step{6}")
     g.api.app.set_fields(g.task_id, fields)

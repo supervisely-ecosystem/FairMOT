@@ -86,17 +86,17 @@ def init(data, state):
     state["selectedModel"] = "dla_34"  # "ResNet-50"
     state["weightsInitialization"] = "imagenet"  # "custom"  # "imagenet" #@TODO: for debug
 
-    state["collapsed3"] = not True
-    state["disabled3"] = not True
+    state["collapsed4"] = not True
+    state["disabled4"] = not True
     state["modelLoading"] = False
-    init_progress(3, data)
+    init_progress(4, data)
 
-    state["weightsPath"] = ""# "/mmclassification/5687_synthetic products v2_003/checkpoints/epoch_10.pth"  #@TODO: for debug
-    data["done3"] = False
+    state["weightsPath"] = ""# "/mmclassification/5687_synthetic products v2_004/checkpoints/epoch_10.pth"  #@TODO: for debug
+    data["done4"] = False
 
 
 def restart(data, state):
-    data["done3"] = False
+    data["done4"] = False
     # state["collapsed6"] = True
     # state["disabled6"] = True
 
@@ -122,9 +122,9 @@ def apply_model(api: sly.Api, task_id, context, state, app_logger):
             file_info = g.api.file.get_info_by_path(g.team_id, weights_path_remote)
             if file_info is None:
                 raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), weights_path_remote)
-            progress_cb = get_progress_cb(3, "Download weights", file_info.sizeb, is_size=True, min_report_percent=1)
+            progress_cb = get_progress_cb(4, "Download weights", file_info.sizeb, is_size=True, min_report_percent=1)
             g.api.file.download(g.team_id, weights_path_remote, local_weights_path, g.my_app.cache, progress_cb)
-            reset_progress(3)
+            reset_progress(4)
         else:
             pass
         #     weights_url = get_pretrained_weights_by_name(state["selectedModel"])
@@ -146,11 +146,11 @@ def apply_model(api: sly.Api, task_id, context, state, app_logger):
         raise e
 
     fields = [
-        {"field": "data.done3", "payload": True},
-        {"field": "state.collapsed4", "payload": False},
-        {"field": "state.disabled4", "payload": False},
-        {"field": "state.activeStep", "payload": 4},
+        {"field": "data.done4", "payload": True},
+        {"field": "state.collapsed5", "payload": False},
+        {"field": "state.disabled5", "payload": False},
+        {"field": "state.activeStep", "payload": 5},
         {"field": "state.modelLoading", "payload": False},
     ]
-    api.app.set_field(task_id, "data.scrollIntoView", f"step{4}")
+    # api.app.set_field(task_id, "data.scrollIntoView", f"step{5}")
     g.api.app.set_fields(g.task_id, fields)
