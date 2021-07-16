@@ -146,9 +146,12 @@ def from_sl_to_MOT(projects_ids):
                     seq_path = os.path.join(result_dir, dataset.name, get_file_name(video_info.name), seq_name)
 
                     # gt_path = os.path.join(result_anns, gt_name)
+                    if os.path.exists(result_images):  # DEBUG
+                        continue
 
                     mkdir(result_images)
                     mkdir(result_anns)
+
 
                     with open(seq_path, 'a') as f:
                         f.write('[Sequence]\n')

@@ -38,12 +38,12 @@ def init(data, state):
 
     state["splitMethod"] = "random"
 
-    state["trainTagName"] = ""
-    if project_meta.tag_metas.get("train") is not None:
-        state["trainTagName"] = "train"
-    state["valTagName"] = ""
-    if project_meta.tag_metas.get("val") is not None:
-        state["valTagName"] = "val"
+    # state["trainTagName"] = ""
+    # if project_meta.tag_metas.get("train") is not None:
+    #     state["trainTagName"] = "train"
+    # state["valTagName"] = ""
+    # if project_meta.tag_metas.get("val") is not None:
+    #     state["valTagName"] = "val"
 
     state["trainDatasets"] = []
     state["valDatasets"] = []
@@ -52,8 +52,8 @@ def init(data, state):
     data["trainVideosCount"] = None
     data["valVideosCount"] = None
     data["done2"] = False
-    state["collapsed2"] = True
-    state["disabled2"] = True
+    state["collapsed2"] = not True
+    state["disabled2"] = not True
 
     state["trainVideosPaths"] = None
     state["valVideosPaths"] = None

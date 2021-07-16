@@ -145,8 +145,6 @@ RUN ls /usr/local/cuda
 #RUN cd DCNv2 && ./make.sh
 # RUN cd DCNv2 && CUDA_VISIBLE_DEVICES=0 ./make.sh
 
-RUN pip install supervisely==6.1.84
-
 
 
 

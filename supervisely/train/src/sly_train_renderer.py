@@ -44,11 +44,13 @@ def preview_predictions(gt_image, pred_image):
 
 def update_preview_by_index(index, gallery_preview):
     previews_links = g.api.app.get_field(g.task_id, 'data.previewPredLinks')
+    detection_threshold = g.api.app.get_field(g.task_id, 'state.detThres')
     gt_image_link = previews_links[index][0]
     pred_image_link = previews_links[index][1]
 
     gallery_preview.set_left('ground truth', gt_image_link)
-    gallery_preview.set_right('predicted', pred_image_link)
+    gallery_preview.set_right(f'predicted [threshold: {detection_threshold}]',
+                              pred_image_link)
 
     gallery_preview.update(options=False)
 

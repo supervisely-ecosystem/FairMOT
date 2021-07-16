@@ -10,7 +10,8 @@ import torch
 import torch.utils.data
 from torchvision.transforms import transforms as T
 from opts import opts
-from models.model import create_model, load_model, save_model
+from models.model import create_model, load_model  # SLY CODE
+from models.model import save_model as save_model_base  # SLY CODE
 from models.data_parallel import DataParallel
 from logger import Logger
 from datasets.dataset_factory import get_dataset
@@ -19,18 +20,11 @@ from test_det import test_det
 
 from sly_train_progress import get_progress_cb, reset_progress, init_progress  # SLY CODE
 import sly_train_renderer  # SLY CODE
+from functools import partial  # SLY CODE
 
 
 
 
-def get_n_params(model):
-    pp=0
-    for p in list(model.parameters()):
-        nn=1
-        for s in list(p.size()):
-            nn = nn*s
-        pp += nn
-    return pp
 
 def main(opt):
     torch.manual_seed(opt.seed)
@@ -58,7 +52,7 @@ def main(opt):
     print('Creating model...')
     model = create_model(opt.arch, opt.heads, opt.head_conv)
     optimizer = torch.optim.Adam(model.parameters(), opt.lr)
-    print(get_n_params(model))
+
     start_epoch = 0
 
 
@@ -78,6 +72,8 @@ def main(opt):
     trainer = Trainer(opt, model, optimizer)
     trainer.set_device(opt.gpus, opt.chunk_sizes, opt.device)
 
+    save_model = partial(save_model_base, arch=opt.arch)
+
     if opt.load_model != '':
         model, optimizer, start_epoch = load_model(
             model, opt.load_model, trainer.optimizer, opt.resume, opt.lr, opt.lr_step)
@@ -85,7 +81,6 @@ def main(opt):
     sly_epoch_progress = get_progress_cb("Epoch", "Epoch", (opt.num_epochs - start_epoch), min_report_percent=1)  # SLY CODE
 
     for epoch in range(start_epoch + 1, opt.num_epochs + 1):
-
 
         mark = epoch if opt.save_all else 'last'
         log_dict_train, _ = trainer.train(epoch, train_loader)
@@ -100,13 +95,16 @@ def main(opt):
             with torch.no_grad():
                 opt.load_model = os.path.join(opt.save_dir, 'model_validation.pth')
                 mean_map, mean_r, mean_p = test_det(opt, batch_size=opt.master_batch_size)  # SLY CODE
+
                 sly_train_renderer.update_charts(epoch - 1,
                                                  dict(zip([
                                                      "val_map",
                                                      "val_recall",
                                                      "val_precision",
                                                  ], [mean_map, mean_r, mean_p])))  # SLY CODE
-
+            print(os.listdir(opt.save_dir))
+            os.remove(os.path.join(opt.save_dir, 'model_validation.pth'))
+            print(os.listdir(opt.save_dir))
 
         else:
             save_model(os.path.join(opt.save_dir, 'model_last.pth'),

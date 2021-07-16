@@ -18,6 +18,8 @@ import shutil
 from supervisely_lib.app.widgets import CompareGallery
 import sly_train_renderer
 
+import glob
+
 _open_lnk_name = "open_app.lnk"
 
 
@@ -41,8 +43,8 @@ def init(data, state):
     data["previewPredLinks"] = []
     state["currEpochPreview"] = 1
 
-    state["collapsed5"] = True
-    state["disabled5"] = True
+    state["collapsed5"] = not True
+    state["disabled5"] = not True
     state["done5"] = False
 
     data["outputName"] = None
@@ -108,8 +110,8 @@ def _save_link_to_ui(local_dir, app_url):
         print(app_url, file=text_file)
 
 
-def upload_artifacts_and_log_progress():
-    _save_link_to_ui(g.artifacts_dir, g.my_app.app_url)
+def upload_train_results():
+    _save_link_to_ui(g.experiment_dir, g.my_app.app_url)
 
     def upload_monitor(monitor, api: sly.Api, task_id, progress: sly.Progress):
         if progress.total == 0:
@@ -118,11 +120,12 @@ def upload_artifacts_and_log_progress():
             progress.set_current_value(monitor.bytes_read, report=False)
         _update_progress_ui("UploadDir", g.api, g.task_id, progress)
 
-    progress = sly.Progress("Upload directory with training artifacts to Team Files", 0, is_size=True)
+    progress = sly.Progress("Upload directory with training files to Team Files", 0, is_size=True)
     progress_cb = partial(upload_monitor, api=g.api, task_id=g.task_id, progress=progress)
 
-    remote_dir = f"/fairMOT/{g.task_id}_{g.project_info.name}"
-    res_dir = g.api.file.upload_directory(g.team_id, g.artifacts_dir, remote_dir, progress_size_cb=progress_cb)
+    exp_id = g.api.app.get_field(g.task_id, 'state.expId')
+    remote_dir = f"/fairMOT/{exp_id}"
+    res_dir = g.api.file.upload_directory(g.team_id, g.experiment_dir, remote_dir, progress_size_cb=progress_cb)
     return res_dir
 
 
@@ -157,7 +160,65 @@ def organize_data(state):
     gen_data_path(root_path)
     gen_labels(root_path)
 
+    clean_exp_dir()
+
     dump_config(root_path)
+
+
+def clean_exp_dir():
+    exp_id = g.api.app.get_field(g.task_id, 'state.expId')
+    exp_dir = f"../exp/mot/{exp_id}/"
+
+    if os.path.exists(exp_dir):
+        shutil.rmtree(exp_dir)
+
+
+def get_files_paths(src_dir, extensions):
+    files_paths = []
+    for root, dirs, files in os.walk(src_dir):
+        for extension in extensions:
+            for file in files:
+                if file.endswith(extension):
+                    file_path = os.path.join(root, file)
+                    files_paths.append(file_path)
+
+    return files_paths
+
+
+def dump_info(state):
+    exp_id = g.api.app.get_field(g.task_id, 'state.expId')
+    checkpoints_dir = f"../exp/mot/{exp_id}/"
+
+    info_files_paths = get_files_paths(checkpoints_dir, ['.txt'])
+    for info_files_path in info_files_paths:
+        destination = os.path.join(g.info_dir, info_files_path.split('/')[-1])
+        shutil.move(info_files_path, destination)
+
+
+def dump_checkpoints():
+    exp_id = g.api.app.get_field(g.task_id, 'state.expId')
+
+    checkpoints_dir = f"../exp/mot/{exp_id}/"
+
+    checkpoints_paths_src = get_files_paths(checkpoints_dir, ['.pth'])
+
+    for checkpoints_path in checkpoints_paths_src:
+        destination = os.path.join(g.checkpoints_dir, checkpoints_path.split('/')[-1])
+        shutil.move(checkpoints_path, destination)
+
+
+def dump_meta(state):
+    preview_pred_links = g.api.app.get_field(g.task_id, 'data.previewPredLinks')
+
+    sly.json.dump_json_file(state, os.path.join(g.meta_dir, "ui_state.json"))
+    sly.json.dump_json_file(preview_pred_links,
+                            os.path.join(g.meta_dir, "preview_pred_links.json"))
+
+
+def dump_results(state):
+    dump_info(state)
+    dump_checkpoints()
+    dump_meta(state)
 
 
 def organize_in_mot_format(video_paths=None, is_train=True):
@@ -177,7 +238,7 @@ def organize_in_mot_format(video_paths=None, is_train=True):
 
         destination = os.path.join(mot_images_path, f'{project_id}_{ds_name}_{video_index}')
 
-        if not os.path.exists(destination):
+        if not os.path.exists(destination):  # DEBUG
             shutil.copytree(video_path, destination)
 
         organize_progress(1)
@@ -202,7 +263,6 @@ def train(api: sly.Api, task_id, context, state, app_logger):
     try:
         os.chdir('../../../src')
 
-        sly.json.dump_json_file(state, os.path.join(g.info_dir, "ui_state.json"))
         organize_data(state)
         init_script_arguments(state)
 
@@ -210,6 +270,7 @@ def train(api: sly.Api, task_id, context, state, app_logger):
 
         fair_mot_train(opt)
 
+        dump_results(state)
         # hide progress bars and eta
         fields = [
             {"field": "data.progressEpoch", "payload": None},
@@ -219,7 +280,7 @@ def train(api: sly.Api, task_id, context, state, app_logger):
         ]
         g.api.app.set_fields(g.task_id, fields)
 
-        remote_dir = upload_artifacts_and_log_progress()
+        remote_dir = upload_train_results()
         file_info = api.file.get_info_by_path(g.team_id, os.path.join(remote_dir, _open_lnk_name))
         api.task.set_output_directory(task_id, file_info.id, remote_dir)
 

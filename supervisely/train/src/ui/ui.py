@@ -7,6 +7,8 @@ import architectures as model_architectures
 import hyperparameters as hyperparameters
 import splits as splits
 
+import select_class as select_class
+
 import monitoring as monitoring
 # import artifacts as artifacts
 
@@ -17,12 +19,12 @@ def init(data, state):
     state["restartFrom"] = None
 
     input_project.init(data, state)  # 1 stage
+    select_class.init(data, state)  # 2 stage
+    splits.init(data, state)  # 3 stage
+    model_architectures.init(data, state)  # 4 stage
+    hyperparameters.init(data, state)  # 5 stage
 
-    splits.init(data, state)
-    model_architectures.init(data, state)  # 3 stage
-    hyperparameters.init(data, state)  # 4 stage
-
-    monitoring.init(data, state)
+    monitoring.init(data, state)  # 6 stage
     # artifacts.init(data)
 
 
@@ -36,21 +38,26 @@ def restart(api: sly.Api, task_id, context, state, app_logger):
 
     if restart_from_step <= 2:
         if restart_from_step == 2:
+            select_class.restart(data, state)
+        else:
+            select_class.init(data, state)
+    if restart_from_step <= 3:
+        if restart_from_step == 3:
             splits.restart(data, state)
         else:
             splits.init(data, state)
-    if restart_from_step <= 3:
-        if restart_from_step == 3:
+    if restart_from_step <= 4:
+        if restart_from_step == 4:
             model_architectures.restart(data, state)
         else:
             model_architectures.init(data, state)
-    if restart_from_step <= 4:
-        if restart_from_step == 4:
+    if restart_from_step <= 5:
+        if restart_from_step == 5:
             hyperparameters.restart(data, state)
         else:
             hyperparameters.init(data, state)
-    if restart_from_step <= 5:
-        if restart_from_step == 5:
+    if restart_from_step <= 6:
+        if restart_from_step == 6:
             monitoring.restart(data, state)
         else:
             monitoring.init(data, state)

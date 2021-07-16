@@ -16,17 +16,24 @@ project_info = api.project.get_info_by_id(project_id)
 if project_info is None:  # for debug
     raise ValueError(f"Project with id={project_id} not found")
 
-sly.fs.clean_dir(my_app.data_dir)  # @TODO: for debug
+# sly.fs.clean_dir(my_app.data_dir)  # for debug
 
 project_dir = os.path.join(my_app.data_dir, "train_fairMOT")
 project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
 
-artifacts_dir = os.path.join(project_dir, "artifacts")
-sly.fs.mkdir(artifacts_dir)
-info_dir = os.path.join(project_dir, "info")
+experiment_dir = os.path.join(project_dir, "experiment_files")
+
+if os.path.exists(experiment_dir):
+    sly.fs.clean_dir(experiment_dir)
+
+# artifacts_dir = os.path.join(experiment_dir, "artifacts")
+# sly.fs.mkdir(artifacts_dir)
+info_dir = os.path.join(experiment_dir, "info")
 sly.fs.mkdir(info_dir)
-checkpoints_dir = os.path.join(project_dir, "checkpoints")
+checkpoints_dir = os.path.join(experiment_dir, "checkpoints")
 sly.fs.mkdir(checkpoints_dir)
+meta_dir = os.path.join(experiment_dir, "meta")
+sly.fs.mkdir(meta_dir)
 
 root_source_dir = str(Path(sys.argv[0]).parents[3])
 sly.logger.info(f"Root source directory: {root_source_dir}")

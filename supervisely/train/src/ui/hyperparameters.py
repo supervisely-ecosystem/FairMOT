@@ -34,8 +34,8 @@ def init(data, state):
     state["ltrb"] = True
 
     # stepper
-    state["collapsed4"] = True
-    state["disabled4"] = True
+    state["collapsed4"] = not True
+    state["disabled4"] = not True
     data["done4"] = False
 
 
