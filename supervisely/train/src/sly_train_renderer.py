@@ -105,3 +105,7 @@ def calculate_eta_epochs(eta_iter_value, eta_iter_elapsed_value, curr_epoch):
 
     eta_epoch_seconds = mean_epoch_time * (epochs_num - curr_epoch + 1) - eta_iter_elapsed_value
     return "{:0>8}".format(str(timedelta(seconds=round(eta_epoch_seconds))))
+
+
+def finish_training_in_advance():
+    return g.api.app.get_field(g.task_id, 'state.finishTrain')

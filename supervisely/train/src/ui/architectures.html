@@ -26,7 +26,8 @@
                 <tr v-for="model in data.models">
                     <td v-for="column in data.modelColumns">
                         <div v-if="column.title === 'Model'">
-                            <el-radio class="radio" v-model="state.selectedModel" :label="model[column.key]" :disabled="data.done4">
+                            <el-radio class="radio" v-model="state.selectedModel" :label="model[column.key]"
+                                      :disabled="data.done4">
                                 {{model[column.key]}}
                             </el-radio>
                         </div>
@@ -44,7 +45,8 @@
                 <div>load model from checkpoint</div>
             </el-radio>
             <sly-field title="Path to weights file" description="Ypu can copy path to .pth in Team Files">
-                <el-input v-model="state.weightsPath" :disabled="data.done4" placeholder="Path to .pth file in Team Files"></el-input>
+                <el-input v-model="state.weightsPath" :disabled="data.done4"
+                          placeholder="Path to .pth file in Team Files"></el-input>
             </sly-field>
         </el-tab-pane>
     </el-tabs>
@@ -64,7 +66,8 @@
     </div>
     <el-button type="warning" class="regular mt10" :plain="true"
                @click="state.restartFrom = 4;"
-               v-if="data.done4 && !state.started">
+               v-if="data.done4 && !state.started"
+               :disabled="state.trainStarted">
         <i class="zmdi zmdi-rotate-left mr5"></i> reselect
     </el-button>
 </sly-card>

@@ -78,9 +78,14 @@ def main(opt):
         model, optimizer, start_epoch = load_model(
             model, opt.load_model, trainer.optimizer, opt.resume, opt.lr, opt.lr_step)
 
-    sly_epoch_progress = get_progress_cb("Epoch", "Epoch", (opt.num_epochs - start_epoch), min_report_percent=1)  # SLY CODE
+    sly_epoch_progress = get_progress_cb("Epoch", "Epoch", opt.num_epochs, min_report_percent=1)  # SLY CODE
 
-    for epoch in range(start_epoch + 1, opt.num_epochs + 1):
+    for epoch in range(1, opt.num_epochs + 1):
+
+        if sly_train_renderer.finish_training_in_advance() and epoch != 1:  # SLY CODE
+            save_model(os.path.join(opt.save_dir, 'model_last.pth'),
+                       epoch, model, optimizer)
+            break
 
         mark = epoch if opt.save_all else 'last'
         log_dict_train, _ = trainer.train(epoch, train_loader)
@@ -119,7 +124,11 @@ def main(opt):
             save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(epoch)),
                        epoch, model, optimizer)
 
+        save_model(os.path.join(opt.save_dir, 'model_last.pth'),
+                   epoch, model, optimizer)  # SLY CODE
+
         sly_epoch_progress(1)  # SLY CODE
+
 
     reset_progress('Epoch')  # SLY CODE
     logger.close()

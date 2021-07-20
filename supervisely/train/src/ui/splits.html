@@ -54,13 +54,16 @@
                 Based on datasets
                 <div>Select one or several datasets for every split</div>
             </el-radio>
-            <sly-field title="Notice: How to make equal splits"
-                       description="Choose the same dataset(s) for train/validation to make splits equal. Can be used for debug
-                                    and for tiny projects">
-                <sly-icon slot="icon" :options="{ color: '#fba607', bgColor: '#ffe9da', rounded: false }">
-                    <i class="zmdi zmdi-info"></i>
+            <sly-field title="INFO: How to make equal splits"
+                       description="choose the same dataset(s) for train/validation to make splits equal. Can be used for debug
+                                    and for tiny projects"
+                       style="padding-top: 16px; padding-bottom: 0">
+
+                <sly-icon slot="icon" :options="{ color: '#13ce66', bgColor: '#e1f7eb', rounded: false }">
+                    <i class="zmdi zmdi-info-outline"></i>
                 </sly-icon>
             </sly-field>
+
             <sly-field title="Train dataset(s)"
                        description="all videos in selected dataset(s) are considered as training set">
 
@@ -166,7 +169,8 @@
         </div>
         <el-button type="warning" class="regular mt10" :plain="true"
                    @click="state.restartFrom = 3;"
-                   v-if="data.done3 && !state.started">
+                   v-if="data.done3 && !state.started"
+                   :disabled="state.trainStarted">
             <i class="zmdi zmdi-rotate-left mr5"></i> reselect
         </el-button>
     </div>

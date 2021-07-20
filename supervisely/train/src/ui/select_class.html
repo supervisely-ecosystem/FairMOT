@@ -9,22 +9,22 @@
     <div v-if="state.statsLoaded && !state.selectedClass" class="fflex mt5 mb10"
          style="flex-direction: column; align-items: flex-start"
     >
-            <!--            <h2 style="margin-bottom: 4px"><i class="zmdi zmdi-alert-triangle ml5 mr10" style="color: #ea5809;"></i>Objects-->
-            <!--                that can be used not found</h2>-->
-            <!--            <a target="_blank" slot="title"-->
-            <!--           :href="`/projects/${data.projectId}/datasets`" style="color: #7f858e; font-weight: normal; align-self: flex-start; text-align: left; padding-left: 37px; font-size: 13px;">-->
-            <!--                please reselect input project-->
-            <!--            </a>-->
+        <!--            <h2 style="margin-bottom: 4px"><i class="zmdi zmdi-alert-triangle ml5 mr10" style="color: #ea5809;"></i>Objects-->
+        <!--                that can be used not found</h2>-->
+        <!--            <a target="_blank" slot="title"-->
+        <!--           :href="`/projects/${data.projectId}/datasets`" style="color: #7f858e; font-weight: normal; align-self: flex-start; text-align: left; padding-left: 37px; font-size: 13px;">-->
+        <!--                please reselect input project-->
+        <!--            </a>-->
 
-            <sly-field title="Warning: Objects that can be used not found"
-                       description="please reselect input project"
-            >
-                <sly-icon slot="icon" :options="{ color: '#fba607', bgColor: '#ffe9da', rounded: false }">
-                    <i class="zmdi zmdi-alert-triangle"></i>
-                </sly-icon>
-            </sly-field>
+        <sly-field title="WARNING: Objects that can be used not found"
+                   description="please reselect input project"
+        >
+            <sly-icon slot="icon" :options="{ color: '#fba607', bgColor: '#ffe9da', rounded: false }">
+                <i class="zmdi zmdi-alert-triangle"></i>
+            </sly-icon>
+        </sly-field>
 
-        </div>
+    </div>
 
     <el-table v-if="state.statsLoaded"
               :data="data.selectClassTable"
@@ -110,7 +110,8 @@
         </div>
         <el-button type="warning" class="regular mt10" :plain="true"
                    @click="state.restartFrom = 2;"
-                   v-if="data.done2 && !state.started">
+                   v-if="data.done2 && !state.started"
+                   :disabled="state.trainStarted">
             <i class="zmdi zmdi-rotate-left mr5"></i> reselect
         </el-button>
     </div>

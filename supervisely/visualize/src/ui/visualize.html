@@ -1,0 +1,61 @@
+<sly-card title="Visualize"
+          subtitle="track video processing"
+          ref="step5"
+          :options="{collapsable: true}"
+          :collapsed.sync="state.collapsed5"
+          :disabled="{disabled: state.disabled5, message: 'complete stage 4'}">
+    <el-button v-if="!state.done5 && !data.progressUploadDir"
+               type="primary" class="regular"
+               @click="state.visualizingStarted = true; command('visualize_videos')"
+               :loading="state.visualizingStarted === true"
+    >
+        <i class="zmdi zmdi-play mr5" v-if="!state.visualizingStarted"></i> Visualize
+    </el-button>
+
+
+    <div v-if="data.outputUrl" class="mt15">
+        <sly-field title="Training data"
+                   description="Training data has been uploaded to Team Files">
+            <a slot="title" target="_blank" :href="`${data.outputUrl}`">{{data.outputName}}</a>
+            <sly-icon slot="icon" :options="{ color: '#33c94c', bgColor: '#d9f7e4', rounded: false }">
+                <i class="zmdi zmdi-folder"></i>
+            </sly-icon>
+        </sly-field>
+        <div>
+            <i class="zmdi zmdi-check-circle mr5" style="color: #13ce66"></i>
+            <span style="color: #5a6772;">Visualizing has been successfully finished</span>
+        </div>
+    </div>
+
+    <div v-if="data.progressUploadDir && !data.outputUrl" style="padding-top: 10px">
+        <div style="color: #20a0ff">
+            {{data.progressUploadDir}}: {{data.progressCurrentUploadDir}} / {{data.progressTotalUploadDir}}
+        </div>
+        <el-progress :percentage="data.progressPercentUploadDir"></el-progress>
+    </div>
+
+    <div v-if="data.progressTrainInfo" style="padding-top: 14px;">
+        <div style="color: #20a0ff">
+            {{data.progressTrainInfo}}: {{data.progressCurrentTrainInfo}} / {{data.progressTotalTrainInfo}}
+        </div>
+        <el-progress :percentage="data.progressPercentTrainInfo"></el-progress>
+    </div>
+    <div v-if="data.progressEpoch "
+         style="padding-top: 20px; padding-bottom: 14px">
+
+
+        <div v-if="data.progressEpoch" class="">
+            <div style="color: #20a0ff">
+                {{data.progressEpoch}}: {{data.progressCurrentEpoch}} / {{data.progressTotalEpoch}}
+            </div>
+            <el-progress :percentage="data.progressPercentEpoch"></el-progress>
+        </div>
+        <div v-if="data.progressIter" class="mt10">
+            <div style="color: #20a0ff">
+                {{data.progressIter}}: {{data.progressCurrentIter}} / {{data.progressTotalIter}}
+            </div>
+            <el-progress :percentage="data.progressPercentIter"></el-progress>
+        </div>
+    </div>
+
+</sly-card>

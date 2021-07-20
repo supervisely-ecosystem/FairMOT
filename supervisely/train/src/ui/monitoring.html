@@ -4,18 +4,30 @@
           :options="{collapsable: true}"
           :collapsed.sync="state.collapsed6"
           :disabled="{disabled: state.disabled6, message: 'complete stage 4'}">
-    <el-button v-if="!state.done6"
+    <el-button v-if="!state.done6 && !data.progressUploadDir"
                type="primary" class="regular"
                @click="state.trainStarted = true; command('train')"
                :loading="state.trainStarted === true"
     >
-        <i class="zmdi zmdi-play mr5"></i> Train
+        <i class="zmdi zmdi-play mr5" v-if="!state.trainStarted"></i> Train
     </el-button>
+    <el-button v-if="state.trainStarted && !data.progressUploadDir"
+               type="danger" class="regular"
+               @click="state.finishTrainDialog = true;"
+               :disabled="state.finishTrain"
+    >
+        Stop
+    </el-button>
+
+    <div v-if="state.finishTrain && !data.progressUploadDir" style="padding-top: 15px">
+        <i class="zmdi zmdi-info-outline mr5" style="color: #dbb800"></i>
+        <span style="color: #5a6772;">train will stop after current epoch</span>
+    </div>
 
 
     <div v-if="data.outputUrl" class="mt15">
-        <sly-field title="Training artifacts"
-                   description="Training artifacts has been uploaded to Team Files">
+        <sly-field title="Training data"
+                   description="Training data has been uploaded to Team Files">
             <a slot="title" target="_blank" :href="`${data.outputUrl}`">{{data.outputName}}</a>
             <sly-icon slot="icon" :options="{ color: '#33c94c', bgColor: '#d9f7e4', rounded: false }">
                 <i class="zmdi zmdi-folder"></i>
@@ -27,19 +39,23 @@
         </div>
     </div>
 
-    <div v-if="data.progressUploadDir || data.progressTrainInfo || data.progressEpoch || data.progressIter" style="padding-top: 20px">
-        <div v-if="data.progressUploadDir && !data.outputUrl">
-            <div style="color: #20a0ff">
-                {{data.progressUploadDir}}: {{data.progressCurrentUploadDir}} / {{data.progressTotalUploadDir}}
-            </div>
-            <el-progress :percentage="data.progressPercentUploadDir"></el-progress>
+    <div v-if="data.progressUploadDir && !data.outputUrl" style="padding-top: 10px">
+        <div style="color: #20a0ff">
+            {{data.progressUploadDir}}: {{data.progressCurrentUploadDir}} / {{data.progressTotalUploadDir}}
         </div>
-        <div v-if="data.progressTrainInfo" class="mt10">
-            <div style="color: #20a0ff">
-                {{data.progressTrainInfo}}: {{data.progressCurrentTrainInfo}} / {{data.progressTotalTrainInfo}}
-            </div>
-            <el-progress :percentage="data.progressPercentTrainInfo"></el-progress>
+        <el-progress :percentage="data.progressPercentUploadDir"></el-progress>
+    </div>
+
+    <div v-if="data.progressTrainInfo" style="padding-top: 14px;">
+        <div style="color: #20a0ff">
+            {{data.progressTrainInfo}}: {{data.progressCurrentTrainInfo}} / {{data.progressTotalTrainInfo}}
         </div>
+        <el-progress :percentage="data.progressPercentTrainInfo"></el-progress>
+    </div>
+    <div v-if="data.progressEpoch "
+         style="padding-top: 20px; padding-bottom: 14px">
+
+
         <div v-if="data.progressEpoch" class="">
             <div style="color: #20a0ff">
                 {{data.progressEpoch}}: {{data.progressCurrentEpoch}} / {{data.progressTotalEpoch}}
@@ -55,7 +71,7 @@
     </div>
 
 
-    <sly-field v-if="data.etaIter" class="mt15 mb15" style="padding-top: 14px"
+    <sly-field v-if="data.etaIter" class="mt15 mb15"
                title="ETA total | current epoch"
                description="Gives an estimate of roughly how long training process will take">
         <b style="color: #20a0ff"><i class="zmdi zmdi-time-countdown mr5"></i>{{data.etaEpoch}} | {{data.etaIter}}</b>
@@ -74,8 +90,15 @@
                     style="width: 450px;"
                     @input="(val)=>{
                                 state.smoothing = val;
-                                data.chartTrainLoss.options.smoothingWeight = val;
-                                data.chartValAccuracy.options.smoothingWeight = val;
+                                data.chartLoss.options.smoothingWeight = val;
+                                data.chartHmLoss.options.smoothingWeight = val;
+                                data.chartWhLoss.options.smoothingWeight = val;
+                                data.chartOffLoss.options.smoothingWeight = val;
+                                data.chartIdLoss.options.smoothingWeight = val;
+                                data.chartValPrecision.options.smoothingWeight = val;
+                                data.chartValRecall.options.smoothingWeight = val;
+                                data.chartValMap.options.smoothingWeight = val;
+
                             }"
             >
             </el-slider>
@@ -139,8 +162,20 @@
         </sly-field>
 
 
-        <sly-field v-if="data.galleryPreview" title="Preview predictions on validation data"
+        <sly-field title="Preview predictions on validation data"
                    description="real-time validation predictions">
+
+            <sly-field v-if="data.previewPredLinks.length == 0"
+                       title="INFO: Waiting for validation"
+                       description="there will be visualizations of the validation results"
+                       style="padding-top: 16px; padding-bottom: 0">
+
+                <sly-icon slot="icon" :options="{ color: '#13ce66', bgColor: '#e1f7eb', rounded: false }">
+                    <i class="zmdi zmdi-info-outline"></i>
+                </sly-icon>
+            </sly-field>
+
+
             <div class="mt10 mb10 ml10 mr10" v-if="data.previewPredLinks.length > 0">
 
                 <div class="block">
@@ -163,7 +198,7 @@
             </div>
             <sly-grid-gallery
                     class="mt10"
-
+                    v-if="data.galleryPreview"
                     :content="data.galleryPreview.content"
                     :options="data.galleryPreview.options">
                 <template v-slot:card-footer="{ annotation }">

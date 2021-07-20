@@ -34,6 +34,8 @@ def init(data, state):
     data["etaEpochData"] = []
 
     state["trainStarted"] = False
+    state["finishTrain"] = False
+    state["finishTrainDialog"] = False
 
     init_charts(data, state)
 
@@ -124,7 +126,7 @@ def upload_train_results():
     progress_cb = partial(upload_monitor, api=g.api, task_id=g.task_id, progress=progress)
 
     exp_id = g.api.app.get_field(g.task_id, 'state.expId')
-    remote_dir = f"/fairMOT/{exp_id}"
+    remote_dir = f"/FairMOT/train/{exp_id}"
     res_dir = g.api.file.upload_directory(g.team_id, g.experiment_dir, remote_dir, progress_size_cb=progress_cb)
     return res_dir
 
@@ -161,6 +163,9 @@ def organize_data(state):
 
     root_path = f'{g.my_app.data_dir}/data/SLY_MOT'
 
+    if os.path.exists(root_path):  # clear SLY_MOT data dirs before start organizing
+        shutil.rmtree(root_path)
+
     train_videos_paths = state['trainVideosPaths']
     val_videos_paths = state['valVideosPaths']
 
@@ -185,13 +190,13 @@ def clean_exp_dir():
         shutil.rmtree(exp_dir)
 
 
-def dump_info(state):
+def dump_logs(state):
     exp_id = g.api.app.get_field(g.task_id, 'state.expId')
     checkpoints_dir = f"../exp/mot/{exp_id}/"
 
     info_files_paths = g.get_files_paths(checkpoints_dir, ['.txt'])
     for info_files_path in info_files_paths:
-        destination = os.path.join(g.info_dir, info_files_path.split('/')[-1])
+        destination = os.path.join(g.logs_dir, info_files_path.split('/')[-1])
         shutil.move(info_files_path, destination)
 
 
@@ -200,25 +205,25 @@ def dump_checkpoints():
 
     checkpoints_dir = f"../exp/mot/{exp_id}/"
 
-    checkpoints_paths_src = get_files_paths(checkpoints_dir, ['.pth'])
+    checkpoints_paths_src = g.get_files_paths(checkpoints_dir, ['.pth'])
 
     for checkpoints_path in checkpoints_paths_src:
         destination = os.path.join(g.checkpoints_dir, checkpoints_path.split('/')[-1])
         shutil.move(checkpoints_path, destination)
 
 
-def dump_meta(state):
+def dump_info(state):
     preview_pred_links = g.api.app.get_field(g.task_id, 'data.previewPredLinks')
 
-    sly.json.dump_json_file(state, os.path.join(g.meta_dir, "ui_state.json"))
+    sly.json.dump_json_file(state, os.path.join(g.info_dir, "ui_state.json"))
     sly.json.dump_json_file(preview_pred_links,
-                            os.path.join(g.meta_dir, "preview_pred_links.json"))
+                            os.path.join(g.info, "preview_pred_links.json"))
 
 
 def dump_results(state):
-    dump_info(state)
+    dump_logs(state)
     dump_checkpoints()
-    dump_meta(state)
+    dump_info(state)
 
 
 def organize_in_mot_format(video_paths=None, is_train=True):
@@ -246,6 +251,13 @@ def organize_in_mot_format(video_paths=None, is_train=True):
     reset_progress("TrainInfo")
 
 
+@g.my_app.callback("setFinishTrainFlag")
+@sly.timeit
+def set_finish_train_flag(api: sly.Api, task_id, context, state, app_logger):
+    g.api.app.set_fields(g.task_id,
+                         [{'field': 'state.finishTrain', 'payload': True}])
+
+
 @g.my_app.callback("previewByEpoch")
 @sly.timeit
 def preview_by_epoch(api: sly.Api, task_id, context, state, app_logger):
@@ -261,6 +273,7 @@ def preview_by_epoch(api: sly.Api, task_id, context, state, app_logger):
 # @g.my_app.ignore_errors_and_show_dialog_window()
 def train(api: sly.Api, task_id, context, state, app_logger):
     try:
+        sly_dir_path = os.getcwd()
         os.chdir('../../../src')
 
         organize_data(state)
@@ -289,6 +302,7 @@ def train(api: sly.Api, task_id, context, state, app_logger):
             {"field": "data.outputUrl", "payload": g.api.file.get_url(file_info.id)},
             {"field": "data.outputName", "payload": remote_dir},
             {"field": "state.done6", "payload": True},
+            {"field": "state.finishTrain", "payload": False},
             {"field": "state.trainStarted", "payload": False},
         ]
         # sly_train_renderer.send_fields({'data.eta': None})  # SLY CODE
@@ -297,5 +311,6 @@ def train(api: sly.Api, task_id, context, state, app_logger):
         api.app.set_field(task_id, "state.trainStarted", False)
         raise e  # app will handle this error and show modal window
 
+    os.chdir(sly_dir_path)
     # stop application
     # g.my_app.stop()
