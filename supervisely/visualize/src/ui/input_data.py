@@ -1,16 +1,11 @@
 import os
-from collections import namedtuple
-import shelve
+
 import supervisely_lib as sly
 import sly_globals as g
 from sly_train_progress import get_progress_cb, reset_progress, init_progress
 
-from supervisely_lib.io.fs import mkdir, get_file_name
+import cv2
 
-from supervisely_lib.video_annotation.key_id_map import KeyIdMap
-from supervisely_lib.geometry.rectangle import Rectangle
-
-import shutil
 
 progress_index = 1
 _images_infos = None  # dataset_name -> image_name -> image_info
@@ -38,6 +33,38 @@ def init(data, state):
     state["validationDatasets"] = []
     state["validationAllDatasets"] = True
 
+    data['videosData'] = []
+    data['videosData'] = [{'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5349_ds_1_1sec_10fps', 'fps': 10.0}, {'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5349_ds_1_1sec_10fps_stream_0_cWU8H', 'fps': 10.0}, {'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5349_ds_1_1sec_10fps_stream_0_Me3Rg', 'fps': 10.0}, {'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5349_ds_0_1sec_15fps', 'fps': 15.0}, {'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5349_ds3_1sec_10fps', 'fps': 10.0}] # HARDCODED
+
+
+def videos_to_frames(project_path, videos_data):
+
+    videos_paths = g.get_files_paths(project_path, '.mp4')
+
+    for video_path in videos_paths:
+
+        project_id = video_path.split('/')[-4]
+        ds_name = video_path.split('/')[-3]
+        video_name = (video_path.split('/')[-1]).split('.mp4')[0]
+        output_path = os.path.join(g.converted_dir, f'{project_id}_{ds_name}_{video_name}')
+
+        os.makedirs(output_path, exist_ok=True)
+
+        vidcap = cv2.VideoCapture(video_path)
+        success, image = vidcap.read()
+        count = 0
+        while success:
+            cv2.imwrite(f"{output_path}/frame{count:06d}.jpg", image)  # save frame as JPEG file
+            success, image = vidcap.read()
+
+            count += 1
+
+        fps = vidcap.get(cv2.CAP_PROP_FPS)
+
+        videos_data.append(
+            {'path': output_path, 'fps': fps}
+        )
+
 
 @g.my_app.callback("download_projects_handler")
 @sly.timeit
@@ -48,18 +75,25 @@ def download_projects_handler(api: sly.api, task_id, context, state, app_logger)
 
 def download_projects(project_ids):
     download_progress = get_progress_cb('InputProject', "Download project", len(project_ids))
+    videos_data = []
     for project_id in project_ids:
         try:
             project_dir = os.path.join(g.projects_dir, f'{project_id}')
             if not sly.fs.dir_exists(project_dir):
                 sly.fs.mkdir(project_dir)
+            else:
+                sly.fs.clean_dir(project_dir)
             sly.download_video_project(g.api, project_id, project_dir, log_progress=True)
+            videos_to_frames(project_dir, videos_data)
+
         except Exception as e:
             raise e
         download_progress(1)
     reset_progress('InputProject')
 
     fields = [
+
+        {"field": f"data.videosData", "payload": videos_data},
         {"field": f"data.done1", "payload": True},
         {"field": f"state.collapsed2", "payload": False},
         {"field": f"state.disabled2", "payload": False},

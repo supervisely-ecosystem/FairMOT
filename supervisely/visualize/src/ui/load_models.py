@@ -15,14 +15,14 @@ from functools import partial
 local_weights_path = None
 
 
-
 def init(data, state):
     state["collapsed2"] = not True
     state["disabled2"] = not True
     state["modelLoading"] = False
     init_progress(2, data)
 
-    state["weightsPath"] = ""# "/mmclassification/5687_synthetic products v2_002/checkpoints/epoch_10.pth"  #@TODO: for debug
+    state[
+        "weightsPath"] = ""  # "/mmclassification/5687_synthetic products v2_002/checkpoints/epoch_10.pth"  #@TODO: for debug
     data["done2"] = False
 
 
@@ -33,8 +33,11 @@ def restart(data, state):
 
 
 def list_files(sly_fs_path):
+    nesting_level = len(sly_fs_path.split('/'))
+
     files_in_dir = g.api.file.list(g.team_id, sly_fs_path)
-    pth_paths = [file['path'] for file in files_in_dir if file['path'].endswith('.pth')]
+    pth_paths = [file['path'] for file in files_in_dir if file['path'].endswith('.pth') and
+                 len(file['path'].split('/')) == nesting_level]
 
     return pth_paths
 
@@ -54,9 +57,11 @@ def download_checkpoints(sly_fs_path):
         sly.fs.clean_dir(g.checkpoints_dir)
 
     files_size_b = get_file_sizes(sly_fs_path)
-    download_progress = get_progress_cb(2, "Download models", files_size_b, is_size=True, min_report_percent=1)
+    download_progress = get_progress_cb(2, "Download checkpoints", files_size_b, is_size=True, min_report_percent=1)
 
     g.api.file.download_directory(g.team_id, sly_fs_path, g.checkpoints_dir, progress_cb=download_progress)
+
+    reset_progress(2)
     return 0
 
 
@@ -73,7 +78,6 @@ def generate_rows_by_models(models_paths):
             print(ex)
             arch = epoch = '-'
         rows.append({
-            "selected": True,
             "name": f"{model_path.split('/')[-1]}",
             "arch": f"{arch}",
             "epoch": f"{epoch}",
@@ -91,15 +95,16 @@ def fill_table(table_rows):
 
     return 0
 
+
 @g.my_app.callback("load_models_handler")
 @sly.timeit
-# @g.my_app.ignore_errors_and_show_dialog_window()
+@g.my_app.ignore_errors_and_show_dialog_window()
 def load_models_handler(api: sly.Api, task_id, context, state, app_logger):
     try:
-        # pth_paths = list_files(state["weightsPath"])
-        # if len(pth_paths) == 0:
-        #     raise FileNotFoundError('Not found .pth files in directory')
-        # download_checkpoints(state["weightsPath"])
+        pth_paths = list_files(state["weightsPath"])
+        if len(pth_paths) == 0:
+            raise FileNotFoundError('Not found .pth files in directory')
+        download_checkpoints(state["weightsPath"])
 
         models_paths_local = [os.path.join(g.checkpoints_dir, model_name) for model_name in
                               os.listdir(g.checkpoints_dir) if model_name.endswith('.pth')]

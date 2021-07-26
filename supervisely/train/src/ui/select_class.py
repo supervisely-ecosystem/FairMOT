@@ -58,7 +58,7 @@ def generate_rows_by_ann(ann_meta):
 def get_datasets_list_by_class_label(class_label):
     datasets_names_list = []
 
-    input_data_dir = os.path.join(g.my_app.data_dir, f'input_data')
+    input_data_dir = os.path.join(g.my_app.data_dir, f'input_data_mot')
 
     available_ds_paths = g.get_files_paths(input_data_dir, [f'{class_label}.txt'])
 

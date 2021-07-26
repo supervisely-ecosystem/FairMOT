@@ -13,9 +13,9 @@
     </el-button>
 
 
-    <div v-if="data.outputUrl" class="mt15">
-        <sly-field title="Training data"
-                   description="Training data has been uploaded to Team Files">
+    <div v-if="data.outputUrl" class="mt15 mb15">
+        <sly-field title="Visualizing data"
+                   description="Visualizing data has been uploaded to Team Files">
             <a slot="title" target="_blank" :href="`${data.outputUrl}`">{{data.outputName}}</a>
             <sly-icon slot="icon" :options="{ color: '#33c94c', bgColor: '#d9f7e4', rounded: false }">
                 <i class="zmdi zmdi-folder"></i>
@@ -27,6 +27,13 @@
         </div>
     </div>
 
+     <video v-if="data.gridPreview" controls style="max-height: 650px; max-width: 100%;">
+
+            <!--                <source src="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">-->
+            <source :src="data.gridPreview" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+
     <div v-if="data.progressUploadDir && !data.outputUrl" style="padding-top: 10px">
         <div style="color: #20a0ff">
             {{data.progressUploadDir}}: {{data.progressCurrentUploadDir}} / {{data.progressTotalUploadDir}}
@@ -34,27 +41,19 @@
         <el-progress :percentage="data.progressPercentUploadDir"></el-progress>
     </div>
 
-    <div v-if="data.progressTrainInfo" style="padding-top: 14px;">
-        <div style="color: #20a0ff">
-            {{data.progressTrainInfo}}: {{data.progressCurrentTrainInfo}} / {{data.progressTotalTrainInfo}}
-        </div>
-        <el-progress :percentage="data.progressPercentTrainInfo"></el-progress>
-    </div>
-    <div v-if="data.progressEpoch "
-         style="padding-top: 20px; padding-bottom: 14px">
-
-
-        <div v-if="data.progressEpoch" class="">
+    <div v-if="data.progressModels "
+         style="padding-top: 20px; ">
+        <div v-if="data.progressModels" class="">
             <div style="color: #20a0ff">
-                {{data.progressEpoch}}: {{data.progressCurrentEpoch}} / {{data.progressTotalEpoch}}
+                {{data.progressModels}}: {{data.progressCurrentModels}} / {{data.progressTotalModels}}
             </div>
-            <el-progress :percentage="data.progressPercentEpoch"></el-progress>
+            <el-progress :percentage="data.progressPercentModels"></el-progress>
         </div>
-        <div v-if="data.progressIter" class="mt10">
+        <div v-if="data.progressVideos" class="mt10">
             <div style="color: #20a0ff">
-                {{data.progressIter}}: {{data.progressCurrentIter}} / {{data.progressTotalIter}}
+                {{data.progressVideos}}: {{data.progressCurrentVideos}} / {{data.progressTotalVideos}}
             </div>
-            <el-progress :percentage="data.progressPercentIter"></el-progress>
+            <el-progress :percentage="data.progressPercentVideos"></el-progress>
         </div>
     </div>
 

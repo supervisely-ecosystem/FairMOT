@@ -17,7 +17,7 @@ def init_script_arguments(state):
 
     needed_args = ['expId', 'gpus', 'numWorkers', 'numEpochs', 'lr', 'lrStep',
                    'batchSize', 'masterBatchSize', 'valInterval', 'hmWeight', 'offWeight',
-                   'whWeight', 'idWeight', 'reidDim', 'ltrb', 'saveInterval', 'detThres']
+                   'whWeight', 'idWeight', 'reidDim', 'ltrb', 'saveInterval', 'detThres', 'numIters']
 
     for needed_arg in needed_args:
         sys.argv.extend([f'--{camel_to_snake(needed_arg)}', f'{state[needed_arg]}'])

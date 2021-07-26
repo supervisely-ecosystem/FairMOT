@@ -4,6 +4,9 @@ import ui as ui
 import sly_logger_hook  # to register hook
 import sly_imgaugs  # to register first part of the pipeline
 
+# @TODO: окно эксплорера при выборе модели
+
+
 
 def main():
     sly.logger.info("Script arguments", extra={

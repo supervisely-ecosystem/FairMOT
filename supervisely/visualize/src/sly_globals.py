@@ -24,14 +24,28 @@ project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
 
 temp_files = os.path.join(project_dir, "temp_files")
 
-# if os.path.exists(temp_files):
-#     sly.fs.clean_dir(temp_files)
+if os.path.exists(temp_files):  # clean temp
+    sly.fs.clean_dir(temp_files)
 
+converted_dir = os.path.join(temp_files, "converted_input")
+sly.fs.mkdir(converted_dir)
 
 projects_dir = os.path.join(temp_files, "projects")
 sly.fs.mkdir(projects_dir)
 checkpoints_dir = os.path.join(temp_files, "checkpoints")
 sly.fs.mkdir(checkpoints_dir)
+
+grid_video_dir = os.path.join(temp_files, "grid_video")
+sly.fs.mkdir(grid_video_dir)
+
+output_dir = os.path.join(project_dir, "output_results")
+
+if os.path.exists(output_dir):  # clean output
+    sly.fs.clean_dir(output_dir)
+else:
+    sly.fs.mkdir(output_dir)
+
+
 
 
 root_source_dir = str(Path(sys.argv[0]).parents[3])

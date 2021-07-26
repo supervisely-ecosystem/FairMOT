@@ -48,7 +48,7 @@ class BaseTrainer(object):
                     state[k] = v.to(device=device, non_blocking=True)
 
     def run_epoch(self, phase, epoch, data_loader):
-        sly_iter_progress = get_progress_cb("Iter", "Train iter", len(data_loader))  # SLY CODE
+
 
         model_with_loss = self.model_with_loss
         if phase == 'train':
@@ -66,6 +66,8 @@ class BaseTrainer(object):
         num_iters = len(data_loader) if opt.num_iters < 0 else opt.num_iters
         bar = Bar('{}/{}'.format(opt.task, opt.exp_id), max=num_iters)
         end = time.time()
+
+        sly_iter_progress = get_progress_cb("Iter", "Train iter", num_iters)  # SLY CODE
         for iter_id, batch in enumerate(data_loader):
             if iter_id >= num_iters:
                 break

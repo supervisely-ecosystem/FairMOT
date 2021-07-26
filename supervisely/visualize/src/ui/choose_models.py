@@ -12,9 +12,28 @@ def init(data, state):
     state['selectedClass'] = None
 
     data["modelsTable"] = []
+    data["modelsTable"] = [
+        {
+            'name': 'model_10.pth',
+            'arch': 'dla_34',
+            'epoch': '10',
+            'isDisabled': False},
+        {
+            'name': 'model_15.pth',
+            'arch': 'dla_34',
+            'epoch': '15',
+            'isDisabled': False},
+        {
+            'name': 'model_20.pth',
+            'arch': 'dla_34',
+            'epoch': '20',
+            'isDisabled': False},
+
+    ]  # HARDCODED
 
     state["statsLoaded"] = False
     state["loadingStats"] = False
+    state["selectedModels"] = ['model_10.pth', 'model_15.pth']
 
     data["done3"] = False
     state["collapsed3"] = not True
@@ -29,6 +48,11 @@ def restart(data, state):
 @sly.timeit
 @g.my_app.ignore_errors_and_show_dialog_window()
 def select_models(api: sly.api, task_id, context, state, app_logger):
+    selected_count = len(state['selectedModels'])
+
+    if selected_count == 0:
+        raise ValueError('No models selected. Please select models.')
+
     fields = [
         {"field": "data.done3", "payload": True},
         {"field": "state.collapsed4", "payload": False},

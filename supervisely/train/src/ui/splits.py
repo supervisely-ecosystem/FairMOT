@@ -169,7 +169,7 @@ def split_videos_by_datasets(train_datasets_names, val_datasets_names):
 def get_ds_paths(projects_ids=None):
     ds_paths = []
 
-    input_data_path = os.path.join(g.my_app.data_dir, 'input_data')
+    input_data_path = os.path.join(g.my_app.data_dir, 'input_data_mot')
     projects_ids = sorted(
         [name for name in os.listdir(input_data_path) if os.path.isdir(os.path.join(input_data_path, name))])
 

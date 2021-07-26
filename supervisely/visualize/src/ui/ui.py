@@ -6,6 +6,7 @@ import input_data as input_project
 import load_models
 import choose_models
 import parameters
+import visualize
 
 
 @sly.timeit
@@ -16,7 +17,8 @@ def init(data, state):
     input_project.init(data, state)  # 1 stage
     load_models.init(data, state)  # 2 stage
     choose_models.init(data, state)  # 3 stage
-    parameters.init(data, state) # 4 stage
+    parameters.init(data, state)  # 4 stage
+    visualize.init(data, state)  # 5 stage
 
 
 
@@ -45,6 +47,11 @@ def restart(api: sly.Api, task_id, context, state, app_logger):
             parameters.restart(data, state)
         else:
             parameters.init(data, state)
+    if restart_from_step <= 5:
+        if restart_from_step == 5:
+            visualize.restart(data, state)
+        else:
+            visualize.init(data, state)
 
     fields = [
         {"field": "data", "payload": data, "append": True, "recursive": False},

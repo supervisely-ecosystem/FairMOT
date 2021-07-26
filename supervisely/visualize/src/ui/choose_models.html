@@ -20,18 +20,22 @@
     <el-table v-if="data.modelsTable"
               :data="data.modelsTable"
               class="ultra-table"
-    >
+              @selection-change="
+                (val) => {
+                    state.selectedModels = val.map(x => x.name);
+                }
+                ">
+        <el-table-column type="selection" width="55"></el-table-column>
+        <!--        <el-table-column label="SELECTED" width="180px" align="center">-->
+        <!--            <template scope="scope">-->
+        <!--                <el-checkbox-->
+        <!--                        v-model="scope.row.selected"-->
 
-        <el-table-column label="SELECTED" width="180px" align="center">
-            <template scope="scope">
-                <el-checkbox
-                        v-model="scope.row.selected"
+        <!--                        :disabled="scope.row.isDisabled || data.done3">-->
 
-                        :disabled="scope.row.isDisabled || data.done3">
-
-                </el-checkbox>
-            </template>
-        </el-table-column>
+        <!--                </el-checkbox>-->
+        <!--            </template>-->
+        <!--        </el-table-column>-->
 
         <el-table-column label="NAME" align="center">
             <template scope="scope">
@@ -57,39 +61,15 @@
     </el-table>
 
 
-    <div class="fflex" style="justify-content: space-between">
-        <div>
-            <el-button
-                    type="primary"
-                    style="margin-top: 20px"
-                    class="regular"
+    <el-button
+            type="primary"
+            style="margin-top: 20px"
+            class="regular"
 
-                    v-if="!data.done3"
-                    @click="command('apply_models')">
-                APPLY
-            </el-button>
-        </div>
-        <div>
-            <el-button
-                    type="primary"
-                    style="margin-top: 20px"
-                    class="regular"
-
-                    v-if="!data.done3"
-                    @click="command('select_all')">
-                SELECT ALL
-            </el-button>
-            <el-button
-                    type="primary"
-                    style="margin-top: 20px"
-                    class="regular"
-
-                    v-if="!data.done3"
-                    @click="command('deselect_all')">
-                DESELECT ALL
-            </el-button>
-        </div>
-    </div>
+            v-if="!data.done3"
+            @click="command('apply_models')">
+        APPLY
+    </el-button>
 
 
     <div v-if="data.done3 && !state.splitInProgress" class="mt10">

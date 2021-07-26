@@ -11,14 +11,14 @@
         <el-input v-model="state.weightsPath" :disabled="data.done2"
                   placeholder="path to directory with .pth files in Team Files"></el-input>
     </sly-field>
-
-    <el-button type="primary" class="regular mt10"
+    <el-button type="primary" class="regular"
                @click="state.modelLoading=true; command('load_models_handler');"
                :loading="state.modelLoading"
+               :disabled="state.weightsPath.length === 0"
                v-if="!data.done2">
         load models
     </el-button>
-    <div v-if="data.progress2" class="" style="padding-top: 20px;">
+    <div v-if="data.progress2" class="" style="padding-top: 14px;">
         <div style="color: #20a0ff">{{data.progress2}}: {{data.progressCurrent2}} / {{data.progressTotal2}}</div>
         <el-progress :percentage="data.progressPercent2"></el-progress>
     </div>

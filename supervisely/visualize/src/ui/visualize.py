@@ -5,22 +5,22 @@ from sly_train_progress import get_progress_cb, reset_progress, init_progress
 import sly_globals as g
 
 from sly_train_progress import _update_progress_ui
-from sly_train_args import init_script_arguments
+
 from functools import partial
 
 from lib.opts import opts
-from train import main as fair_mot_train
+from sly_track import main as track
 from gen_data_path import gen_data_path
 from gen_labels import gen_labels
 
 import sys
 import torch
 import re
+from PIL import Image
 
 import shutil
+import cv2
 
-from supervisely_lib.app.widgets import CompareGallery
-import sly_train_renderer
 
 import glob
 
@@ -28,14 +28,14 @@ _open_lnk_name = "open_app.lnk"
 
 
 def init(data, state):
-    init_progress("TrainInfo", data)
-    init_progress("Epoch", data)
-    init_progress("Iter", data)
+    init_progress("Models", data)
+    init_progress("Videos", data)
     init_progress("UploadDir", data)
 
     data["etaEpoch"] = None
     data["etaIter"] = None
     data["etaEpochData"] = []
+    data['gridPreview'] = None
 
     state["visualizingStarted"] = False
 
@@ -64,7 +64,7 @@ def init_script_arguments(state):
 
     for needed_arg in needed_args:
         sys.argv.extend([f'--{camel_to_snake(needed_arg)}', f'{state[needed_arg]}'])
-        
+
     sys.argv.extend([f'--data_cfg', f'{g.my_app.data_dir}/sly_mot_generated.json'])
     sys.argv.extend([f'--output-format', ' video'])
     sys.argv.extend([f'--output-root', '../demo_output/'])
@@ -78,8 +78,7 @@ def _save_link_to_ui(local_dir, app_url):
         print(app_url, file=text_file)
 
 
-def upload_train_results():
-    _save_link_to_ui(g.experiment_dir, g.my_app.app_url)
+def upload_visualization_results():
 
     def upload_monitor(monitor, api: sly.Api, task_id, progress: sly.Progress):
         if progress.total == 0:
@@ -93,107 +92,29 @@ def upload_train_results():
 
     exp_id = g.api.app.get_field(g.task_id, 'state.expId')
     remote_dir = f"/FairMOT/visualization/{exp_id}"
-    res_dir = g.api.file.upload_directory(g.team_id, g.experiment_dir, remote_dir, progress_size_cb=progress_cb)
+    local_dir = os.path.join(g.output_dir, exp_id)
+
+    _save_link_to_ui(local_dir, g.my_app.app_url)
+
+    res_dir = g.api.file.upload_directory(g.team_id, local_dir, remote_dir, progress_size_cb=progress_cb)
+
     return res_dir
 
 
-def dump_config(root_path):
-    mot_config = {
-        "root": root_path,
-        "train":
-            {
-                "sly_mot": f"./data/sly_mot.train"
-            },
-        "test":
-            {
-                "sly_mot": f"./data/sly_mot.test"
-            }
-    }
-
-    with open(f'{g.my_app.data_dir}/sly_mot_generated.json', 'w') as file:
-        # mot_config = json.dumps(mot_config)
-        json.dump(mot_config, file)
 
 
-def remove_negative_labels(root_path):
-    class_label = g.api.app.get_field(g.task_id, 'state.selectedClass')
-
-    gt_files = g.get_files_paths(root_path, [f'.txt'])
-
-    for gt_file in gt_files:
-        if not gt_file.endswith(f'{class_label}.txt'):
-            os.remove(gt_file)
-
-
-def organize_data(state):
-
-    root_path = f'{g.my_app.data_dir}/data/SLY_MOT'
-
-    if os.path.exists(root_path):  # clear SLY_MOT data dirs before start organizing
-        shutil.rmtree(root_path)
-
-    train_videos_paths = state['trainVideosPaths']
-    val_videos_paths = state['valVideosPaths']
-
-    organize_in_mot_format(video_paths=train_videos_paths, is_train=True)
-    organize_in_mot_format(video_paths=val_videos_paths, is_train=False)
-
-    remove_negative_labels(root_path)
-
-    gen_data_path(root_path)
-    gen_labels(root_path)
-
-    clean_exp_dir()
-
-    dump_config(root_path)
-
-
-def clean_exp_dir():
-    exp_id = g.api.app.get_field(g.task_id, 'state.expId')
-    exp_dir = f"../exp/mot/{exp_id}/"
-
-    if os.path.exists(exp_dir):
-        shutil.rmtree(exp_dir)
-
-
-def dump_logs(state):
-    exp_id = g.api.app.get_field(g.task_id, 'state.expId')
-    checkpoints_dir = f"../exp/mot/{exp_id}/"
-
-    info_files_paths = g.get_files_paths(checkpoints_dir, ['.txt'])
-    for info_files_path in info_files_paths:
-        destination = os.path.join(g.logs_dir, info_files_path.split('/')[-1])
-        shutil.move(info_files_path, destination)
-
-
-def dump_checkpoints():
-    exp_id = g.api.app.get_field(g.task_id, 'state.expId')
-
-    checkpoints_dir = f"../exp/mot/{exp_id}/"
-
-    checkpoints_paths_src = g.get_files_paths(checkpoints_dir, ['.pth'])
-
-    for checkpoints_path in checkpoints_paths_src:
-        destination = os.path.join(g.checkpoints_dir, checkpoints_path.split('/')[-1])
-        shutil.move(checkpoints_path, destination)
-
-
-def dump_info(state):
-    preview_pred_links = g.api.app.get_field(g.task_id, 'data.previewPredLinks')
-
-    sly.json.dump_json_file(state, os.path.join(g.info_dir, "ui_state.json"))
-    sly.json.dump_json_file(preview_pred_links,
-                            os.path.join(g.info, "preview_pred_links.json"))
-
-
-def dump_results(state):
-    dump_logs(state)
-    dump_checkpoints()
-    dump_info(state)
-
+#
+#
+#
+# def dump_info(state):
+#     preview_pred_links = g.api.app.get_field(g.task_id, 'data.previewPredLinks')
+#
+#     sly.json.dump_json_file(state, os.path.join(g.info_dir, "ui_state.json"))
+#     sly.json.dump_json_file(preview_pred_links,
+#                             os.path.join(g.info, "preview_pred_links.json"))
 
 def organize_in_mot_format(video_paths=None, is_train=True):
-    organize_progress = get_progress_cb("TrainInfo", f"Organizing {'train' if is_train else 'validation'} data",
+    organize_progress = get_progress_cb("VisualizeInfo", f"Organizing {'train' if is_train else 'validation'} data",
                                         (len(video_paths)))
 
     working_dir = 'train' if is_train else 'test'
@@ -214,7 +135,113 @@ def organize_in_mot_format(video_paths=None, is_train=True):
 
         organize_progress(1)
 
-    reset_progress("TrainInfo")
+    reset_progress("VisualizeInfo")
+
+
+def get_visualizing_checkpoints(max_count):
+    models_rows = g.api.app.get_field(g.task_id, 'data.modelsTable')
+    selected_models = g.api.app.get_field(g.task_id, 'state.selectedModels')
+
+    visualizing_models = []
+    for row in models_rows:
+        if row['name'] in selected_models:
+            visualizing_models.append(row)
+
+    visualizing_models = sorted(visualizing_models, key=lambda k: int(k['epoch']))
+
+    if len(visualizing_models) <= max_count:
+        return visualizing_models
+    else:
+        step = int(len(visualizing_models) / max_count)
+        return [visualizing_models[index] for index in range(0, len(visualizing_models), step)][:max_count]
+
+
+def get_visualization_video_paths(visualization_models):
+    exp_id = g.api.app.get_field(g.task_id, 'state.expId')
+    res_path = os.path.join(g.output_dir, exp_id)
+    checkpoints_names = os.listdir(os.path.join(g.output_dir, exp_id))
+
+    video_paths = []
+
+    for visualization_model in visualization_models:
+        folder_name = visualization_model['name'].replace('.', '_')
+        if folder_name in checkpoints_names:
+            videos_path = os.path.join(res_path, folder_name, 'videos')
+            video_name = sorted(os.listdir(videos_path))[0]
+            video_paths.append(os.path.join(videos_path, video_name))
+
+    return video_paths
+
+
+def get_video_shape(video_path):
+    vcap = cv2.VideoCapture(video_path)
+    height = width = 0
+    if vcap.isOpened():
+        width = vcap.get(3)  # float `width`
+        height = vcap.get(4)
+
+    return tuple([int(width), int(height)])
+
+
+def check_video_shape(video_paths):
+    video_shape = (0, 0)
+    for index, video_path in enumerate(video_paths):
+        if index == 0:
+            video_shape = get_video_shape(video_path)
+        else:
+            if get_video_shape(video_path) != video_shape:
+                return None
+    return video_shape
+
+
+def create_image_placeholder(video_shape):
+    img = Image.new('RGB', video_shape, color='black')
+    image_placeholder_path = os.path.join(g.grid_video_dir, 'placeholder.png')
+    img.save(image_placeholder_path)
+
+
+def generate_row(row_paths):
+    created_videos = glob.glob(f'{g.grid_video_dir}/*.mp4')
+    video_num = len(created_videos)
+    output_video_path = f'{g.grid_video_dir}/{video_num}.mp4'
+
+    while len(row_paths) % 3 != 0:  # filling empty grid space by placeholder
+        row_paths.append(f'{g.grid_video_dir}/placeholder.png')
+
+    input_args = ' -i '.join(row_paths)
+
+    cmd_str = f'ffmpeg -y -i {input_args} -filter_complex "[0:v][1:v][2:v]hstack=inputs=3[v]" ' \
+              f'-map "[v]" -c:v libx264 {output_video_path}'
+    os.system(cmd_str)
+
+
+def generate_grid():
+    exp_id = g.api.app.get_field(g.task_id, 'state.expId')
+    created_videos = sorted(glob.glob(f'{g.grid_video_dir}/*.mp4'))
+    output_video_path = os.path.join(f'{g.output_dir}', f'{exp_id}', 'grid_preview.mp4')
+
+    if len(created_videos) == 1:
+        shutil.copy(created_videos[0], output_video_path)
+    else:
+        input_args = ' -i '.join(created_videos)
+
+        cmd_str = f'ffmpeg -y -i {input_args} -filter_complex vstack={len(created_videos)} -c:v libx264 {output_video_path}'
+        os.system(cmd_str)
+
+
+def generate_grid_video(video_paths):
+    video_shape = check_video_shape(video_paths)
+    if video_shape:
+        create_image_placeholder(video_shape)
+        for index in range(0, len(video_paths), 3):
+            row_paths = video_paths[index: index + 3]
+            generate_row(row_paths)
+        generate_grid()
+        return 0
+    else:
+        return -1
+
+
 
 
 
@@ -223,43 +250,47 @@ def organize_in_mot_format(video_paths=None, is_train=True):
 @sly.timeit
 # @g.my_app.ignore_errors_and_show_dialog_window()
 def visualize_videos(api: sly.Api, task_id, context, state, app_logger):
+    sly_dir_path = os.getcwd()
+    os.chdir('../../../src')
     try:
-        sly_dir_path = os.getcwd()
-        os.chdir('../../../src')
 
-        organize_data(state)
         init_script_arguments(state)
 
-        opt = opts().parse()
+        opt = opts().init()
+        # opt = opt.parse()
 
-        fair_mot_train(opt)
+        track(opt)
 
-        dump_results(state)
+        checkpoints_list = get_visualizing_checkpoints(max_count=9)
+        video_paths = get_visualization_video_paths(checkpoints_list)
+        generate_grid_video(video_paths)
+
+
         # hide progress bars and eta
         fields = [
-            {"field": "data.progressEpoch", "payload": None},
-            {"field": "data.progressIter", "payload": None},
-            {"field": "data.etaEpoch", "payload": None},
-            {"field": "data.etaIter", "payload": None},
+            {"field": "data.progressModels", "payload": None},
+            {"field": "data.progressVideos", "payload": None},
         ]
         g.api.app.set_fields(g.task_id, fields)
 
-        remote_dir = upload_train_results()
+        remote_dir = upload_visualization_results()
+        grid_file_info = api.file.get_info_by_path(g.team_id, os.path.join(remote_dir, 'grid_preview.mp4'))
         file_info = api.file.get_info_by_path(g.team_id, os.path.join(remote_dir, _open_lnk_name))
+
         api.task.set_output_directory(task_id, file_info.id, remote_dir)
 
         # show result directory in UI
         fields = [
+            {"field": "data.gridPreview", "payload": grid_file_info.full_storage_url},
             {"field": "data.outputUrl", "payload": g.api.file.get_url(file_info.id)},
             {"field": "data.outputName", "payload": remote_dir},
             {"field": "state.done5", "payload": True},
-            {"field": "state.finishTrain", "payload": False},
-            {"field": "state.trainStarted", "payload": False},
+            {"field": "state.visualizingStarted", "payload": False},
         ]
         # sly_train_renderer.send_fields({'data.eta': None})  # SLY CODE
         g.api.app.set_fields(g.task_id, fields)
     except Exception as e:
-        api.app.set_field(task_id, "state.trainStarted", False)
+        api.app.set_field(task_id, "state.visualizingStarted", False)
         raise e  # app will handle this error and show modal window
 
     os.chdir(sly_dir_path)

@@ -131,6 +131,7 @@ def upload_train_results():
     return res_dir
 
 
+
 def dump_config(root_path):
     mot_config = {
         "root": root_path,
@@ -217,7 +218,7 @@ def dump_info(state):
 
     sly.json.dump_json_file(state, os.path.join(g.info_dir, "ui_state.json"))
     sly.json.dump_json_file(preview_pred_links,
-                            os.path.join(g.info, "preview_pred_links.json"))
+                            os.path.join(g.info_dir, "preview_pred_links.json"))
 
 
 def dump_results(state):
