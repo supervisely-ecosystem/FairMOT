@@ -10,8 +10,8 @@ def init(data, state):
     state["confThres"] = 0.4
 
     # stepper
-    state["collapsed4"] = not True
-    state["disabled4"] = not True
+    state["collapsed4"] = True
+    state["disabled4"] = True
     data["done4"] = False
 
 

@@ -29,7 +29,7 @@
     <el-button type="warning" class="regular mt10" :plain="true"
                @click="state.restartFrom = 2;"
                v-if="data.done2 && !state.started"
-               :disabled="state.trainStarted">
+               :disabled="state.visualizingStarted">
         <i class="zmdi zmdi-rotate-left mr5"></i> reselect
     </el-button>
 </sly-card>

@@ -86,8 +86,8 @@ def init(data, state):
     state["selectedModel"] = "dla_34"  # "ResNet-50"
     state["weightsInitialization"] = "imagenet"  # "custom"  # "imagenet" #@TODO: for debug
 
-    state["collapsed4"] = not True
-    state["disabled4"] = not True
+    state["collapsed4"] = True
+    state["disabled4"] =  True
     state["modelLoading"] = False
     init_progress(4, data)
 

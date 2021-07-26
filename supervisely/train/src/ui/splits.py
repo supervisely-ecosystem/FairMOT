@@ -63,8 +63,8 @@ def init(data, state):
     data["trainVideosCount"] = None
     data["valVideosCount"] = None
     data["done3"] = False
-    state["collapsed3"] = not True
-    state["disabled3"] = not True
+    state["collapsed3"] = True
+    state["disabled3"] = True
 
     state["trainVideosPaths"] = None
     state["valVideosPaths"] = None

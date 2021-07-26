@@ -45,8 +45,8 @@ def init(data, state):
 
     state["visualizingStarted"] = False
 
-    state["collapsed5"] = not True
-    state["disabled5"] = not True
+    state["collapsed5"] = True
+    state["disabled5"] = True
     state["done5"] = False
 
     data["outputName"] = None
@@ -55,6 +55,8 @@ def init(data, state):
 
 def restart(data, state):
     data["done5"] = False
+    sly.fs.clean_dir(g.grid_video_dir)
+    sly.fs.clean_dir(g.output_dir)
 
 
 def init_script_arguments(state):
@@ -203,19 +205,24 @@ def create_image_placeholder(video_shape):
     img.save(image_placeholder_path)
 
 
-def generate_row(row_paths):
+def generate_row(row_paths, videos_per_row):
     created_videos = glob.glob(f'{g.grid_video_dir}/*.mp4')
     video_num = len(created_videos)
     output_video_path = f'{g.grid_video_dir}/{video_num}.mp4'
 
-    while len(row_paths) % 3 != 0:  # filling empty grid space by placeholder
+    while len(row_paths) % videos_per_row != 0:  # filling empty grid space by placeholder
         row_paths.append(f'{g.grid_video_dir}/placeholder.png')
 
-    input_args = ' -i '.join(row_paths)
+    if videos_per_row == 1:
+        shutil.copy(row_paths[0], output_video_path)
+    else:
+        input_args = ' -i '.join(row_paths)
 
-    cmd_str = f'ffmpeg -y -i {input_args} -filter_complex "[0:v][1:v][2:v]hstack=inputs=3[v]" ' \
-              f'-map "[v]" -c:v libx264 {output_video_path}'
-    os.system(cmd_str)
+        cmd_str = f'ffmpeg -y -i {input_args} -filter_complex hstack={videos_per_row} -c:v libx264 {output_video_path}'
+        # cmd_str = f'ffmpeg -y -i {input_args} -filter_complex "[0:v][1:v][2:v]hstack=inputs=3[v]" ' \
+        #           f'-map "[v]" -c:v libx264 {output_video_path}'
+        os.system(cmd_str)
+
 
 
 def generate_grid():
@@ -236,9 +243,17 @@ def generate_grid_video(video_paths):
     video_shape = check_video_shape(video_paths)
     if video_shape:
         create_image_placeholder(video_shape)
-        for index in range(0, len(video_paths), 3):
-            row_paths = video_paths[index: index + 3]
-            generate_row(row_paths)
+
+        if len(video_paths) == 1:
+            generate_row(video_paths, 1)
+        elif len(video_paths) == 4:
+            for index in range(0, len(video_paths), 2):
+                row_paths = video_paths[index: index + 2]
+                generate_row(row_paths, 2)
+        else:
+            for index in range(0, len(video_paths), 3):
+                row_paths = video_paths[index: index + 3]
+                generate_row(row_paths, 3)
         generate_grid()
         return 0
     else:
@@ -394,6 +409,8 @@ def generate_sly_project():
 
     models_progress = get_progress_cb('Models', "Upload checkpoint", len(vis_paths), min_report_percent=1)
     for vis_path in vis_paths:
+        dataset_id = None
+        
         videos_paths = g.get_files_paths(vis_path, video_extension)
         videos_progress = get_progress_cb('Videos', "Upload videos", len(videos_paths), min_report_percent=1)
         for video_path in videos_paths:
@@ -425,8 +442,7 @@ def generate_sly_project():
 
 @g.my_app.callback("visualize_videos")
 @sly.timeit
-# @g.my_app.ignore_errors_and_show_dialog_window()
-
+@g.my_app.ignore_errors_and_show_dialog_window()
 def visualize_videos(api: sly.Api, task_id, context, state, app_logger):
     sly_dir_path = os.getcwd()
     os.chdir('../../../src')

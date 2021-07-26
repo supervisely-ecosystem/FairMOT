@@ -92,9 +92,9 @@ def videos_to_frames(project_path, videos_data):
         vidcap = cv2.VideoCapture(video_path)
         success, image = vidcap.read()
         count = 0
+        rotateCode = check_rotation(video_path)
 
         while success:
-            rotateCode = check_rotation(video_path)
             if rotateCode is not None:
                 image = correct_rotation(image, rotateCode)
             cv2.imwrite(f"{output_path}/frame{count:06d}.jpg", image)  # save frame as JPEG file
@@ -112,7 +112,7 @@ def videos_to_frames(project_path, videos_data):
 
 @g.my_app.callback("download_projects_handler")
 @sly.timeit
-# @g.my_app.ignore_errors_and_show_dialog_window()
+@g.my_app.ignore_errors_and_show_dialog_window()
 def download_projects_handler(api: sly.api, task_id, context, state, app_logger):
     download_projects([g.project_id])
 

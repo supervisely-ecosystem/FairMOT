@@ -2,7 +2,7 @@
           subtitle="select the checkpoints you want to use"
           :options="{collapsable: true}"
           :collapsed.sync="state.collapsed3"
-          :disabled="{disabled: state.disabled3, message: 'complete stage 1'}"
+          :disabled="{disabled: state.disabled3, message: 'complete stage 2'}"
           ref="step3">
 
     <div v-if="state.statsLoaded && !state.selectedClass" class="fflex mt5 mb10"
@@ -82,7 +82,7 @@
         <el-button type="warning" class="regular mt10" :plain="true"
                    @click="state.restartFrom = 3;"
                    v-if="data.done3 && !state.started"
-                   :disabled="state.trainStarted">
+                   :disabled="state.visualizingStarted">
             <i class="zmdi zmdi-rotate-left mr5"></i> reselect
         </el-button>
     </div>

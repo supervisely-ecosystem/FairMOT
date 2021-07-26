@@ -16,13 +16,12 @@ local_weights_path = None
 
 
 def init(data, state):
-    state["collapsed2"] = not True
-    state["disabled2"] = not True
+    state["collapsed2"] = True
+    state["disabled2"] = True
     state["modelLoading"] = False
     init_progress(2, data)
 
-    state[
-        "weightsPath"] = ""  # "/mmclassification/5687_synthetic products v2_002/checkpoints/epoch_10.pth"  #@TODO: for debug
+    state["weightsPath"] = ""  # "/mmclassification/5687_synthetic products v2_002/checkpoints/epoch_10.pth"  #@TODO: for debug
     data["done2"] = False
 
 
@@ -30,6 +29,7 @@ def restart(data, state):
     data["done2"] = False
     # state["collapsed6"] = True
     # state["disabled6"] = True
+    sly.fs.clean_dir(g.checkpoints_dir)
 
 
 def list_files(sly_fs_path):
