@@ -6,6 +6,33 @@ from sly_train_progress import get_progress_cb, reset_progress, init_progress
 
 import cv2
 
+import ffmpeg
+
+
+def check_rotation(path_video_file):
+    # this returns meta-data of the video file in form of a dictionary
+    meta_dict = ffmpeg.probe(path_video_file)
+
+    # from the dictionary, meta_dict['streams'][0]['tags']['rotate'] is the key
+    # we are looking for
+
+    rotateCode = None
+    try:
+        if int(meta_dict['streams'][0]['tags']['rotate']) == 90:
+            rotateCode = cv2.ROTATE_90_CLOCKWISE
+        elif int(meta_dict['streams'][0]['tags']['rotate']) == 180:
+            rotateCode = cv2.ROTATE_180
+        elif int(meta_dict['streams'][0]['tags']['rotate']) == 270:
+            rotateCode = cv2.ROTATE_90_COUNTERCLOCKWISE
+    except:
+        pass
+
+    return rotateCode
+
+
+def correct_rotation(frame, rotateCode):
+    return cv2.rotate(frame, rotateCode)
+
 
 progress_index = 1
 _images_infos = None  # dataset_name -> image_name -> image_info
@@ -34,14 +61,26 @@ def init(data, state):
     state["validationAllDatasets"] = True
 
     data['videosData'] = []
-    data['videosData'] = [{'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5349_ds_1_1sec_10fps', 'fps': 10.0}, {'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5349_ds_1_1sec_10fps_stream_0_cWU8H', 'fps': 10.0}, {'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5349_ds_1_1sec_10fps_stream_0_Me3Rg', 'fps': 10.0}, {'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5349_ds_0_1sec_15fps', 'fps': 15.0}, {'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5349_ds3_1sec_10fps', 'fps': 10.0}] # HARDCODED
+    data['videosData'] = [{'index': 0,
+  'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5533_ds0_oc_16118',
+  'fps': 25.012660805547092,
+  'origin_path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/projects/5533/ds0/video/oc_16118.mp4'},
+ {'index': 1,
+  'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5533_ds0_oc_13093',
+  'fps': 25.019430436094815,
+  'origin_path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/projects/5533/ds0/video/oc_13093.mp4'},
+ {'index': 2,
+  'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5533_ds0_test',
+  'fps': 15,
+  'origin_path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/projects/5533/ds0/video/test.mp4'}] # HARDCODED
+
 
 
 def videos_to_frames(project_path, videos_data):
 
     videos_paths = g.get_files_paths(project_path, '.mp4')
 
-    for video_path in videos_paths:
+    for video_index, video_path in enumerate(videos_paths):
 
         project_id = video_path.split('/')[-4]
         ds_name = video_path.split('/')[-3]
@@ -53,7 +92,11 @@ def videos_to_frames(project_path, videos_data):
         vidcap = cv2.VideoCapture(video_path)
         success, image = vidcap.read()
         count = 0
+
         while success:
+            rotateCode = check_rotation(video_path)
+            if rotateCode is not None:
+                image = correct_rotation(image, rotateCode)
             cv2.imwrite(f"{output_path}/frame{count:06d}.jpg", image)  # save frame as JPEG file
             success, image = vidcap.read()
 
@@ -62,7 +105,8 @@ def videos_to_frames(project_path, videos_data):
         fps = vidcap.get(cv2.CAP_PROP_FPS)
 
         videos_data.append(
-            {'path': output_path, 'fps': fps}
+            {'index': video_index, 'path': output_path,
+             'fps': fps, 'origin_path': video_path}
         )
 
 

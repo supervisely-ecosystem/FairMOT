@@ -181,12 +181,13 @@ def main(opt):
         for index, video_data in enumerate(videos_data):
             video_path = video_data['path']
             frame_rate = video_data['fps']
+            video_index = video_data['index']
 
             video_name = video_path.split('/')[-1]
 
             dataloader = datasets.LoadImages(video_path, opt.img_size)
 
-            result_filename = os.path.join(output_root, 'tracks', f'{index}.txt')
+            result_filename = os.path.join(output_root, 'tracks', f'{video_index}.txt')
             os.makedirs(os.path.join(output_root, 'tracks'), exist_ok=True)
 
             nf, ta, tc = eval_seq(opt, dataloader, data_type, result_filename,
@@ -198,11 +199,11 @@ def main(opt):
             timer_calls.append(tc)
 
             # eval
-            logger.info(f'Evaluate seq: {index}')
+            logger.info(f'Evaluate seq: {video_index}')
             evaluator = Evaluator(g.converted_dir, video_name, data_type)
             accs.append(evaluator.eval_file(result_filename))
 
-            output_video_path = osp.join(output_root, 'videos', f'{index}.mp4')
+            output_video_path = osp.join(output_root, 'videos', f'{video_index}.mp4')
             os.makedirs(osp.join(output_root, 'videos'), exist_ok=True)
 
             cmd_str = 'ffmpeg -f image2 -i {}/%05d.jpg -c:v libx264 {}'.format(output_root, output_video_path)

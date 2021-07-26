@@ -14,10 +14,10 @@ def init(data, state):
     data["modelsTable"] = []
     data["modelsTable"] = [
         {
-            'name': 'model_10.pth',
+            'name': 'model_last.pth',
             'arch': 'dla_34',
-            'epoch': '10',
-            'isDisabled': False},
+            'epoch': '32',
+            'isDisabled': True},
         {
             'name': 'model_15.pth',
             'arch': 'dla_34',
@@ -27,13 +27,13 @@ def init(data, state):
             'name': 'model_20.pth',
             'arch': 'dla_34',
             'epoch': '20',
-            'isDisabled': False},
+            'isDisabled': True},
 
     ]  # HARDCODED
 
     state["statsLoaded"] = False
     state["loadingStats"] = False
-    state["selectedModels"] = ['model_10.pth', 'model_15.pth']
+    state["selectedModels"] = ['model_last.pth']
 
     data["done3"] = False
     state["collapsed3"] = not True

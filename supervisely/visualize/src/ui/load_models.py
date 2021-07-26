@@ -81,7 +81,7 @@ def generate_rows_by_models(models_paths):
             "name": f"{model_path.split('/')[-1]}",
             "arch": f"{arch}",
             "epoch": f"{epoch}",
-            "isDisabled": False,
+            "isDisabled": False if arch != '-' else True,
         })
 
     return rows

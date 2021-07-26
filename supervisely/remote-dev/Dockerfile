@@ -84,6 +84,7 @@ RUN mkdir -p /var/run/sshd
 RUN pip install plotly==4.11.0
 RUN pip install docker==4.4.1
 RUN pip install fuzzywuzzy
+RUN pip install ffmpeg-python==0.2.0
 
 # to support pandas.read_excel
 RUN pip install xlrd

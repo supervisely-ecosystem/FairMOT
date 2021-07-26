@@ -4,6 +4,8 @@ import supervisely_lib as sly
 from sly_train_progress import get_progress_cb, reset_progress, init_progress
 import sly_globals as g
 
+import sly_ann_keeper
+
 from sly_train_progress import _update_progress_ui
 
 from functools import partial
@@ -21,7 +23,6 @@ from PIL import Image
 import shutil
 import cv2
 
-
 import glob
 
 _open_lnk_name = "open_app.lnk"
@@ -31,11 +32,16 @@ def init(data, state):
     init_progress("Models", data)
     init_progress("Videos", data)
     init_progress("UploadDir", data)
+    init_progress("UploadVideo", data)
 
     data["etaEpoch"] = None
     data["etaIter"] = None
     data["etaEpochData"] = []
     data['gridPreview'] = None
+
+    data['dstProjectId'] = None
+    data['dstProjectName'] = None
+    data['dstProjectPreviewUrl'] = None
 
     state["visualizingStarted"] = False
 
@@ -79,7 +85,6 @@ def _save_link_to_ui(local_dir, app_url):
 
 
 def upload_visualization_results():
-
     def upload_monitor(monitor, api: sly.Api, task_id, progress: sly.Progress):
         if progress.total == 0:
             progress.set(monitor.bytes_read, monitor.len, report=False)
@@ -99,8 +104,6 @@ def upload_visualization_results():
     res_dir = g.api.file.upload_directory(g.team_id, local_dir, remote_dir, progress_size_cb=progress_cb)
 
     return res_dir
-
-
 
 
 #
@@ -242,13 +245,188 @@ def generate_grid_video(video_paths):
         return -1
 
 
+def generate_preview_grid(count):
+    checkpoints_list = get_visualizing_checkpoints(max_count=count)
+    video_paths = get_visualization_video_paths(checkpoints_list)
+    generate_grid_video(video_paths)
 
 
+def get_visualized_checkpoints_paths():
+    exp_name_folder = g.api.app.get_field(g.task_id, 'state.expId')
+    results_path = os.path.join(g.output_dir, exp_name_folder)
+
+    results_dirs = [potential_directory for potential_directory in
+                    os.listdir(results_path) if os.path.isdir(os.path.join(results_path, potential_directory))]
+
+    return [os.path.join(results_path, res_dir) for res_dir in results_dirs]
+
+
+def get_objects_count(ann_path):
+    objects_ids = []
+    with open(ann_path, 'r') as ann_file:
+        ann_rows = ann_file.read().split()
+
+        for ann_row in ann_rows:
+            objects_ids.append(ann_row.split(',')[1])
+
+    return len(list(set(objects_ids)))
+
+
+def get_objects_ids_to_indexes_mapping(ann_path):
+    mapping = {}
+    indexer = 0
+
+    with open(ann_path, 'r') as ann_file:
+        ann_rows = ann_file.read().split()
+
+        for ann_row in ann_rows:
+            curr_id = ann_row.split(',')[1]
+
+            rc = mapping.get(curr_id, -1)
+            if rc == -1:
+                mapping[curr_id] = indexer
+                indexer += 1
+
+    return mapping
+
+
+def get_coords_by_row(row_data, video_shape):
+    left, top, w, h = float(row_data[2]), float(row_data[3]), \
+                      float(row_data[4]), float(row_data[5])
+
+    bottom = top + h
+    if round(bottom) >= video_shape[1] - 1:
+        bottom = video_shape[1] - 2
+    right = left + w
+    if round(right) >= video_shape[0] - 1:
+        right = video_shape[0] - 2
+    if left < 0:
+        left = 0
+    if top < 0:
+        top = 0
+
+    if right <= 0 or bottom <= 0 or left >= video_shape[0] or top >= video_shape[1]:
+        return None
+    else:
+        return sly.Rectangle(top, left, bottom, right)
+
+
+def add_figures_from_mot_to_sly(ann_path, ann_keeper, video_shape):
+    ids_to_indexes_mapping = get_objects_ids_to_indexes_mapping(ann_path)
+
+    with open(ann_path, 'r') as ann_file:
+        ann_rows = ann_file.read().split()
+
+    coords_on_frame = []
+    objects_indexes_on_frame = []
+    frame_index = None
+
+    for ann_row in ann_rows:  # for each row in annotation
+        row_data = ann_row.split(',')
+        curr_frame_index = int(row_data[0]) - 1
+
+        if frame_index is None:  # init first frame index
+            frame_index = curr_frame_index
+
+        if frame_index == curr_frame_index:  # if current frame equal previous
+            object_coords = get_coords_by_row(row_data, video_shape=video_shape)
+            if object_coords:
+                coords_on_frame.append(object_coords)
+                objects_indexes_on_frame.append(ids_to_indexes_mapping[row_data[1]])
+
+        else:  # if frame has changed
+            ann_keeper.add_figures_by_frame(coords_data=coords_on_frame,
+                                            objects_indexes=objects_indexes_on_frame,
+                                            frame_index=frame_index)
+
+            coords_on_frame = []
+            objects_indexes_on_frame = []
+
+            frame_index = curr_frame_index
+            object_coords = get_coords_by_row(row_data, video_shape=video_shape)
+            if object_coords:
+                coords_on_frame.append(object_coords)
+                objects_indexes_on_frame.append(ids_to_indexes_mapping[row_data[1]])
+
+    if frame_index:  # uploading latest annotations
+        ann_keeper.add_figures_by_frame(coords_data=coords_on_frame,
+                                        objects_indexes=objects_indexes_on_frame,
+                                        frame_index=frame_index)
+
+
+def process_video(video_path, ann_path, project_id=None, dataset_id=None):
+    exp_id = g.api.app.get_field(g.task_id, 'state.expId')
+
+    class_name = 'tracking object'
+    objects_count = get_objects_count(ann_path)
+    video_shape = get_video_shape(video_path)
+
+    ann_keeper = sly_ann_keeper.AnnotationKeeper(video_shape=(video_shape[1], video_shape[0]),
+                                                 objects_count=objects_count,
+                                                 class_name=class_name)
+
+    add_figures_from_mot_to_sly(ann_path=ann_path,
+                                ann_keeper=ann_keeper,
+                                video_shape=video_shape)
+
+    ds_name = video_path.split('/')[-3]
+
+    ann_keeper.init_project_remotely(project_id=project_id, ds_id=dataset_id,
+                                     project_name=f'{exp_id} visualize', ds_name=f'{ds_name}')
+
+    video_index = int(video_path.split('/')[-1].split('.mp4')[0])  # get original video path
+    videos_data = g.api.app.get_field(g.task_id, 'data.videosData')
+    origin_video_path = video_path
+    for row in videos_data:
+        if row['index'] == video_index:
+            origin_video_path = row['origin_path']
+            break
+
+    ann_keeper.upload_annotation(video_path=origin_video_path)
+
+    return ann_keeper.project.id, ann_keeper.dataset.id
+
+
+def generate_sly_project():
+    vis_paths = get_visualized_checkpoints_paths()
+    video_extension = '.mp4'
+    project_id = dataset_id = None
+
+    models_progress = get_progress_cb('Models', "Upload checkpoint", len(vis_paths), min_report_percent=1)
+    for vis_path in vis_paths:
+        videos_paths = g.get_files_paths(vis_path, video_extension)
+        videos_progress = get_progress_cb('Videos', "Upload videos", len(videos_paths), min_report_percent=1)
+        for video_path in videos_paths:
+            ann_path = video_path.replace('videos', 'tracks').replace(video_extension, '.txt')
+            if not os.path.isfile(ann_path):
+                continue
+
+            project_id, dataset_id = process_video(video_path,
+                                                   ann_path,
+                                                   project_id,
+                                                   dataset_id)
+            videos_progress(1)
+        models_progress(1)
+
+    reset_progress('Models')
+    reset_progress('Videos')
+    reset_progress('UploadVideo')
+
+    res_project = g.api.project.get_info_by_id(project_id)
+    fields = [{"field": "data.dstProjectId", "payload": res_project.id},
+              {"field": "data.dstProjectName", "payload": res_project.name},
+              {"field": "data.dstProjectPreviewUrl",
+               "payload": g.api.image.preview_url(res_project.reference_image_url, 100, 100)},
+
+              ]
+    g.api.task.set_fields(g.task_id, fields)
+    g.api.task.set_output_project(g.task_id, res_project.id, res_project.name)
 
 
 @g.my_app.callback("visualize_videos")
 @sly.timeit
 # @g.my_app.ignore_errors_and_show_dialog_window()
+
 def visualize_videos(api: sly.Api, task_id, context, state, app_logger):
     sly_dir_path = os.getcwd()
     os.chdir('../../../src')
@@ -260,11 +438,9 @@ def visualize_videos(api: sly.Api, task_id, context, state, app_logger):
         # opt = opt.parse()
 
         track(opt)
-
-        checkpoints_list = get_visualizing_checkpoints(max_count=9)
-        video_paths = get_visualization_video_paths(checkpoints_list)
-        generate_grid_video(video_paths)
-
+        #
+        generate_preview_grid(count=9)
+        generate_sly_project()
 
         # hide progress bars and eta
         fields = [

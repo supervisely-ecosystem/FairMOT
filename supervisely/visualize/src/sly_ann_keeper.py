@@ -3,12 +3,15 @@ from sly_globals import *
 # from supervisely_lib.video_annotation.key_id_map import KeyIdMap
 
 from functools import partial
+from sly_train_progress import get_progress_cb, reset_progress, init_progress
 
 
 class AnnotationKeeper:
-    def __init__(self, video_shape, current_objects):
+    def __init__(self, video_shape, objects_count, class_name):
 
         self.video_shape = video_shape
+        self.objects_count = objects_count
+        self.class_name = class_name
 
         self.project = None
         self.dataset = None
@@ -18,7 +21,7 @@ class AnnotationKeeper:
         self.sly_objects_list = []
         self.video_object_list = []
 
-        self.get_sly_objects(current_objects)
+        self.get_sly_objects()
         self.get_video_objects_list()
 
         self.video_object_collection = sly.VideoObjectCollection(self.video_object_list)
@@ -27,11 +30,12 @@ class AnnotationKeeper:
         self.frames_list = []
         self.frames_collection = []
 
-    def add_figures_by_frame(self, coords_data, frame_index):
+    def add_figures_by_frame(self, coords_data, objects_indexes, frame_index):
         temp_figures = []
-        for index, current_coord in enumerate(coords_data):
-            if current_coord:
-                temp_figures.append(sly.VideoFigure(self.video_object_list[index], current_coord, frame_index))
+
+        for i in range(len(coords_data)):
+            temp_figures.append(sly.VideoFigure(self.video_object_list[objects_indexes[i]],
+                                                coords_data[i], frame_index))
 
         self.figures.append(temp_figures)
 
@@ -48,7 +52,7 @@ class AnnotationKeeper:
                                               change_name_if_conflict=True)
         else:
             for dataset in api.dataset.get_list(project_id):
-                if dataset.name == ds_id:
+                if dataset.id == ds_id:
                     self.dataset = dataset
                     break
 
@@ -56,7 +60,7 @@ class AnnotationKeeper:
 
         api.project.update_meta(self.project.id, self.meta.to_json())
 
-    def upload_annotation(self, video_path, sly_progress):
+    def upload_annotation(self, video_path):
         self.get_frames_list()
         self.frames_collection = sly.FrameCollection(self.frames_list)
 
@@ -65,20 +69,13 @@ class AnnotationKeeper:
 
         video_name = video_path.split('/')[-1]
 
-        sly_progress.refresh_params('Uploading video',  sly.fs.get_file_size(video_path), is_size=True)
+        uploading_progress = get_progress_cb('UploadVideo', "Uploading video", sly.fs.get_file_size(video_path),
+                                             is_size=True,
+                                             min_report_percent=1)
 
-        progress_cb = partial(sly_progress.set_progress, api=api, task_id=task_id,
-                              progress=sly_progress.pbar)
-        progress_cb(0)
-        file_info = api.video.upload_paths(self.dataset.id, [video_name], [video_path], item_progress=progress_cb)
-        sly_progress.refresh_params('Uploading annotations', 1)
+        file_info = api.video.upload_paths(self.dataset.id, [video_name], [video_path],
+                                           item_progress=uploading_progress)
         api.video.annotation.append(file_info[0].id, video_annotation)
-        sly_progress.next_step()
-
-        sly_progress.reset_params()
-
-        logger.info(f'{video_name} uploaded!')
-
 
     def get_unique_objects(self, obj_list):
         unique_objects = []
@@ -89,11 +86,9 @@ class AnnotationKeeper:
 
         return unique_objects
 
-    def get_sly_objects(self, current_objects):
-        for obj in current_objects:
-            # @TODO: to add different types shapes
-            # if obj.class_name not in [temp_object.name for temp_object in self.sly_objects_list]:
-            self.sly_objects_list.append(sly.ObjClass(obj.class_name, sly.Rectangle))
+    def get_sly_objects(self):
+        for obj in range(self.objects_count):
+            self.sly_objects_list.append(sly.ObjClass(self.class_name, sly.Rectangle))
 
     def get_video_objects_list(self):
         for sly_object in self.sly_objects_list:
