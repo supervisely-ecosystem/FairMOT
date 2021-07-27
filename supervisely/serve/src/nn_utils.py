@@ -6,7 +6,7 @@ import supervisely_lib as sly
 # from mmcls.datasets.pipelines import Compose
 from lib.models.model import create_model, load_model
 from lib.opts import opts
-from sly_track import eval_seq
+import sly_eval_seq
 import lib.datasets.dataset.jde as datasets
 
 import mot_utils
@@ -139,6 +139,6 @@ def inference_model(opt):
     result_filename = os.path.join(output_root, 'tracks', f'{video_index}.txt')
     os.makedirs(os.path.join(output_root, 'tracks'), exist_ok=True)
 
-    eval_seq(opt, dataloader, data_type, result_filename,
-             save_dir=output_root, show_image=False, frame_rate=frame_rate,
-             epoch=model_epoch)
+    sly_eval_seq.eval_seq(opt, dataloader, data_type, result_filename,
+                               save_dir=output_root, show_image=False, frame_rate=frame_rate,
+                               epoch=model_epoch)

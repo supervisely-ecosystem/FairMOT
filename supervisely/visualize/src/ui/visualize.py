@@ -1,7 +1,7 @@
 import json
 import os
 import supervisely_lib as sly
-from sly_train_progress import get_progress_cb, reset_progress, init_progress
+from sly_visualize_progress import get_progress_cb, reset_progress, init_progress
 import sly_globals as g
 
 import sly_ann_keeper
@@ -11,7 +11,7 @@ from sly_train_progress import _update_progress_ui
 from functools import partial
 
 from lib.opts import opts
-from sly_track import main as track
+from sly_track_wrapper import main as track
 from gen_data_path import gen_data_path
 from gen_labels import gen_labels
 
