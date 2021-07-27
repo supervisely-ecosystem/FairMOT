@@ -6,7 +6,7 @@ import sly_globals as g
 
 import sly_ann_keeper
 
-from sly_train_progress import _update_progress_ui
+from sly_visualize_progress import _update_progress_ui
 
 from functools import partial
 
@@ -74,8 +74,8 @@ def init_script_arguments(state):
         sys.argv.extend([f'--{camel_to_snake(needed_arg)}', f'{state[needed_arg]}'])
 
     sys.argv.extend([f'--data_cfg', f'{g.my_app.data_dir}/sly_mot_generated.json'])
-    sys.argv.extend([f'--output-format', ' video'])
-    sys.argv.extend([f'--output-root', '../demo_output/'])
+    sys.argv.extend([f'--output_format', ' video'])
+    # sys.argv.extend([f'--output-root', '../demo_output/'])
 
 
 def _save_link_to_ui(local_dir, app_url):

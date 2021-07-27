@@ -127,7 +127,7 @@ class opts(object):
         self.parser.add_argument('--input-video', type=str,
                                  default='../videos/MOT16-03.mp4',
                                  help='path to the input video')
-        self.parser.add_argument('--output-format', type=str, default='video', help='video or text')
+        self.parser.add_argument('--output_format', type=str, default='video', help='video or text')
         self.parser.add_argument('--output-root', type=str, default='../demos', help='expected output root path')
 
         # mot

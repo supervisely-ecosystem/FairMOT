@@ -140,5 +140,5 @@ def inference_model(opt):
     os.makedirs(os.path.join(output_root, 'tracks'), exist_ok=True)
 
     sly_eval_seq.eval_seq(opt, dataloader, data_type, result_filename,
-                               save_dir=output_root, show_image=False, frame_rate=frame_rate,
-                               epoch=model_epoch)
+                          save_dir=None, show_image=False, frame_rate=frame_rate,
+                          epoch=model_epoch)

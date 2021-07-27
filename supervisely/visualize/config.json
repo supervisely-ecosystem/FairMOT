@@ -6,7 +6,7 @@
     "track"
   ],
   "description": "Dashboard to configure, start and monitor training",
-  "docker_image": "supervisely/base-py-sdk:6.1.84",
+  "docker_image": "supervisely/base-py-sdk:6.1.92",
   "main_script": "supervisely/train/src/sly_train.py",
   "gui_template": "supervisely/train/src/gui.html",
   "task_location": "workspace_tasks",

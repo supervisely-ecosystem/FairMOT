@@ -7,8 +7,8 @@ import torch
 
 import sly_globals as g
 import supervisely_lib as sly
-from sly_train_progress import get_progress_cb, reset_progress, init_progress
-from sly_train_progress import _update_progress_ui
+from sly_visualize_progress import get_progress_cb, reset_progress, init_progress
+from sly_visualize_progress import _update_progress_ui
 
 from functools import partial
 

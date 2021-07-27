@@ -4,7 +4,7 @@ import sly_globals as g
 import os
 from functools import partial
 
-from sly_train_progress import get_progress_cb, reset_progress, init_progress
+from sly_visualize_progress import get_progress_cb, reset_progress, init_progress
 from input_data import object_ann_info
 
 
