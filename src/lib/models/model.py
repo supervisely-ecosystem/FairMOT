@@ -90,14 +90,16 @@ def load_model(model, model_path, optimizer=None, resume=False,
         return model
 
 
-def save_model(path, epoch, model, optimizer=None, arch=None):
+def save_model(path, epoch, model, optimizer=None, opt=None):
     if isinstance(model, torch.nn.DataParallel):
         state_dict = model.module.state_dict()
     else:
         state_dict = model.state_dict()
     data = {'epoch': epoch,
             'state_dict': state_dict,
-            'arch': arch}  # SLY CODE
+            'arch': opt.arch,
+            'head_conv': opt.head_conv,
+            'heads': opt.heads}  # SLY CODE
     if not (optimizer is None):
         data['optimizer'] = optimizer.state_dict()
     torch.save(data, path)

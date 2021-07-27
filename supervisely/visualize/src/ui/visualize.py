@@ -410,7 +410,7 @@ def generate_sly_project():
     models_progress = get_progress_cb('Models', "Upload checkpoint", len(vis_paths), min_report_percent=1)
     for vis_path in vis_paths:
         dataset_id = None
-        
+
         videos_paths = g.get_files_paths(vis_path, video_extension)
         videos_progress = get_progress_cb('Videos', "Upload videos", len(videos_paths), min_report_percent=1)
         for video_path in videos_paths:

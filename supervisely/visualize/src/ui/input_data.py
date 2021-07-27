@@ -9,30 +9,6 @@ import cv2
 import ffmpeg
 
 
-def check_rotation(path_video_file):
-    # this returns meta-data of the video file in form of a dictionary
-    meta_dict = ffmpeg.probe(path_video_file)
-
-    # from the dictionary, meta_dict['streams'][0]['tags']['rotate'] is the key
-    # we are looking for
-
-    rotateCode = None
-    try:
-        if int(meta_dict['streams'][0]['tags']['rotate']) == 90:
-            rotateCode = cv2.ROTATE_90_CLOCKWISE
-        elif int(meta_dict['streams'][0]['tags']['rotate']) == 180:
-            rotateCode = cv2.ROTATE_180
-        elif int(meta_dict['streams'][0]['tags']['rotate']) == 270:
-            rotateCode = cv2.ROTATE_90_COUNTERCLOCKWISE
-    except:
-        pass
-
-    return rotateCode
-
-
-def correct_rotation(frame, rotateCode):
-    return cv2.rotate(frame, rotateCode)
-
 
 progress_index = 1
 _images_infos = None  # dataset_name -> image_name -> image_info
@@ -61,19 +37,31 @@ def init(data, state):
     state["validationAllDatasets"] = True
 
     data['videosData'] = []
-    data['videosData'] = [{'index': 0,
-  'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5533_ds0_oc_16118',
-  'fps': 25.012660805547092,
-  'origin_path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/projects/5533/ds0/video/oc_16118.mp4'},
- {'index': 1,
-  'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5533_ds0_oc_13093',
-  'fps': 25.019430436094815,
-  'origin_path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/projects/5533/ds0/video/oc_13093.mp4'},
- {'index': 2,
-  'path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/converted_input/5533_ds0_test',
-  'fps': 15,
-  'origin_path': '/Users/qanelph/Desktop/work/supervisely/app_debug_data/data/visualize_fairMOT/temp_files/projects/5533/ds0/video/test.mp4'}] # HARDCODED
 
+
+def check_rotation(path_video_file):
+    # this returns meta-data of the video file in form of a dictionary
+    meta_dict = ffmpeg.probe(path_video_file)
+
+    # from the dictionary, meta_dict['streams'][0]['tags']['rotate'] is the key
+    # we are looking for
+
+    rotateCode = None
+    try:
+        if int(meta_dict['streams'][0]['tags']['rotate']) == 90:
+            rotateCode = cv2.ROTATE_90_CLOCKWISE
+        elif int(meta_dict['streams'][0]['tags']['rotate']) == 180:
+            rotateCode = cv2.ROTATE_180
+        elif int(meta_dict['streams'][0]['tags']['rotate']) == 270:
+            rotateCode = cv2.ROTATE_90_COUNTERCLOCKWISE
+    except:
+        pass
+
+    return rotateCode
+
+
+def correct_rotation(frame, rotateCode):
+    return cv2.rotate(frame, rotateCode)
 
 
 def videos_to_frames(project_path, videos_data):

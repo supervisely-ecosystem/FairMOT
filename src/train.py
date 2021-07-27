@@ -72,7 +72,7 @@ def main(opt):
     trainer = Trainer(opt, model, optimizer)
     trainer.set_device(opt.gpus, opt.chunk_sizes, opt.device)
 
-    save_model = partial(save_model_base, arch=opt.arch)
+    save_model = partial(save_model_base, opt=opt)
 
     if opt.load_model != '':
         model, optimizer, start_epoch = load_model(

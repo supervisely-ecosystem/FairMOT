@@ -191,6 +191,12 @@ def clean_exp_dir():
         shutil.rmtree(exp_dir)
 
 
+def get_class_info():
+    table = g.api.app.get_field(g.task_id, 'data.selectClassTable')
+    selected_class_label = g.api.app.get_field(g.task_id, 'state.selectedClass')
+    return [row for row in table if row['name'] == selected_class_label][0]
+
+
 def dump_logs(state):
     exp_id = g.api.app.get_field(g.task_id, 'state.expId')
     checkpoints_dir = f"../exp/mot/{exp_id}/"
@@ -216,9 +222,9 @@ def dump_checkpoints():
 def dump_info(state):
     preview_pred_links = g.api.app.get_field(g.task_id, 'data.previewPredLinks')
 
+    sly.json.dump_json_file(get_class_info(), os.path.join(g.info_dir, "class_info.json"))
     sly.json.dump_json_file(state, os.path.join(g.info_dir, "ui_state.json"))
-    sly.json.dump_json_file(preview_pred_links,
-                            os.path.join(g.info_dir, "preview_pred_links.json"))
+    sly.json.dump_json_file(preview_pred_links, os.path.join(g.info_dir, "preview_pred_links.json"))
 
 
 def dump_results(state):

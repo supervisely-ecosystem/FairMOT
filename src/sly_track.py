@@ -203,15 +203,16 @@ def main(opt):
             evaluator = Evaluator(g.converted_dir, video_name, data_type)
             accs.append(evaluator.eval_file(result_filename))
 
-            output_video_path = osp.join(output_root, 'videos', f'{video_index}.mp4')
-            os.makedirs(osp.join(output_root, 'videos'), exist_ok=True)
+            if opt.output_format == 'video':
+                output_video_path = osp.join(output_root, 'videos', f'{video_index}.mp4')
+                os.makedirs(osp.join(output_root, 'videos'), exist_ok=True)
 
-            cmd_str = 'ffmpeg -f image2 -i {}/%05d.jpg -c:v libx264 {}'.format(output_root, output_video_path)
-            os.system(cmd_str)
+                cmd_str = 'ffmpeg -f image2 -i {}/%05d.jpg -c:v libx264 {}'.format(output_root, output_video_path)
+                os.system(cmd_str)
 
-            for file in os.listdir(output_root):
-                if file.endswith('.jpg'):
-                    os.remove(os.path.join(output_root, file))
+                for file in os.listdir(output_root):
+                    if file.endswith('.jpg'):
+                        os.remove(os.path.join(output_root, file))
             videos_progress(1)
 
         timer_avgs = np.asarray(timer_avgs)
