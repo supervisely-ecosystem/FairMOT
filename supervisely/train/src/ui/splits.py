@@ -9,7 +9,6 @@ def restart(data, state):
 
 
 def refresh_table(total_items_count):
-
     train_percent = 80
     train_count = int(total_items_count / 100 * train_percent)
     random_split_tab = {
@@ -28,15 +27,14 @@ def refresh_table(total_items_count):
     }
 
     g.api.app.set_fields(g.task_id,
-        [
-            {'field': 'state.randomSplit', 'payload': random_split_tab},
-            {'field': 'data.totalVideosCount', 'payload': total_items_count},
-        ]
-    )
+                         [
+                             {'field': 'state.randomSplit', 'payload': random_split_tab},
+                             {'field': 'data.totalVideosCount', 'payload': total_items_count},
+                         ]
+                         )
 
 
 def init(data, state):
-
     state["splitMethod"] = "random"
 
     data["randomSplit"] = [
@@ -48,13 +46,12 @@ def init(data, state):
     state["randomSplit"] = []
     data['data.totalVideosCount'] = 0
 
-    # refresh_table(g.project_info.items_count)
-    # state["trainTagName"] = ""
-    # if project_meta.tag_metas.get("train") is not None:
-    #     state["trainTagName"] = "train"
-    # state["valTagName"] = ""
-    # if project_meta.tag_metas.get("val") is not None:
-    #     state["valTagName"] = "val"
+    state["trainTagName"] = ""
+    if g.project_meta.tag_metas.get("train") is not None:
+        state["trainTagName"] = "train"
+    state["valTagName"] = ""
+    if g.project_meta.tag_metas.get("val") is not None:
+        state["valTagName"] = "val"
 
     state["trainDatasets"] = []
     state["valDatasets"] = []
@@ -85,13 +82,12 @@ def get_train_val_sets(state):
         train_videos_paths, val_videos_paths = split_videos_by_datasets(train_datasets_names, val_datasets_names)
         return train_videos_paths, val_videos_paths
 
-    # elif split_method == "tags":
-    #     train_tag_name = state["trainTagName"]
-    #     val_tag_name = state["valTagName"]
-    #     add_untagged_to = state["untaggedVideos"]
-    #     train_set, val_set = sly.Project.get_train_val_splits_by_tag(project_dir, train_tag_name, val_tag_name,
-    #                                                                  add_untagged_to)
-    #     return train_set, val_set
+    elif split_method == "tags":
+        train_tag_name = state["trainTagName"]
+        val_tag_name = state["valTagName"]
+
+        train_videos_paths, val_videos_paths = split_videos_by_tags(train_tag_name, val_tag_name)
+        return train_videos_paths, val_videos_paths
     else:
         raise ValueError(f"Unknown split method: {split_method}")
 
@@ -101,6 +97,23 @@ def verify_train_val_sets(train_set, val_set):
         raise ValueError("Train set is empty, check or change split configuration")
     if len(val_set) == 0:
         raise ValueError("Val set is empty, check or change split configuration")
+
+
+def split_videos_by_tags(train_tag_name, val_tag_name):
+    train_videos_paths = []
+    val_videos_paths = []
+
+    ds_paths = get_ds_paths([g.project_info.id])
+    videos_info = get_videos_info([g.project_info.id])
+
+    for ds_path in ds_paths:
+        train_videos_paths.extend(get_video_paths_by_ds_and_counts({'train': 9999 ** 4,
+                                                                    'val': 0}, ds_path)[0])
+
+        val_videos_paths.extend(get_video_paths_by_ds_and_counts({'train': 0,
+                                                                  'val': 9999 ** 4}, ds_path)[1])
+
+    return train_videos_paths, val_videos_paths
 
 
 def split_videos_randomly_by_counts(train_count, val_count):
@@ -149,11 +162,25 @@ def get_video_paths_by_ds_and_counts(counts, ds_path):
            [os.path.join(ds_path, curr_video_name) for curr_video_name in val_videos_paths]
 
 
+def get_videos_info(projects_ids=None):
+    videos_info = []
+
+    for project_id in projects_ids:
+        ds_ids = g.api.dataset.get_list(project_id)
+        for ds_id in ds_ids:
+            videos_info = g.api.video.get_list(ds_id.id)
+            videos_info.extend(videos_info)
+
+            # for video_info in videos_info:
+    return videos_info
+
+
 def split_videos_by_datasets(train_datasets_names, val_datasets_names):
     train_videos_paths = []
     val_videos_paths = []
 
-    ds_paths = get_ds_paths()
+    ds_paths = get_ds_paths([g.project_info.id])
+
 
     for ds_path in ds_paths:
         if ds_path.split('/')[-1] in train_datasets_names:
@@ -170,11 +197,11 @@ def get_ds_paths(projects_ids=None):
     ds_paths = []
 
     input_data_path = os.path.join(g.my_app.data_dir, 'input_data_mot')
-    projects_ids = sorted(
-        [name for name in os.listdir(input_data_path) if os.path.isdir(os.path.join(input_data_path, name))])
+    # projects_ids = sorted(
+    #     [name for name in os.listdir(input_data_path) if os.path.isdir(os.path.join(input_data_path, name))])
 
     for project_id in projects_ids:
-        project_path = os.path.join(input_data_path, project_id)
+        project_path = os.path.join(input_data_path, str(project_id))
         dataset_names = [name for name in os.listdir(project_path) if os.path.isdir(os.path.join(project_path, name))]
 
         for ds_name in dataset_names:

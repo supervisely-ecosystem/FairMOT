@@ -1,33 +1,26 @@
-import os
-from collections import namedtuple
-import shelve
 import supervisely_lib as sly
 import sly_globals as g
+
+import os
+
 from sly_train_progress import get_progress_cb, reset_progress, init_progress
 
 from supervisely_lib.io.fs import mkdir, get_file_name
 
-from supervisely_lib.video_annotation.key_id_map import KeyIdMap
 from supervisely_lib.geometry.rectangle import Rectangle
 
 import cv2
 from glob import glob
 
-import shutil
 
 progress_index = 1
-_images_infos = None  # dataset_name -> image_name -> image_info
-_cache_base_filename = os.path.join(g.my_app.data_dir, "images_info")
-_cache_path = _cache_base_filename + ".db"
-_image_id_to_paths = {}
-
 object_ann_info = None
 
 
 def init(data, state):
     data["projectId"] = g.project_info.id
     data["projectName"] = g.project_info.name
-    data["projectImagesCount"] = g.project_info.items_count
+    data["projectItemsCount"] = g.project_info.items_count if g.project_info.items_count else 0
     data["projectPreviewUrl"] = g.api.image.preview_url(g.project_info.reference_image_url, 100, 100)
 
     init_progress("InputProject", data)
@@ -35,30 +28,14 @@ def init(data, state):
     init_progress("InputVideo", data)
     init_progress("InputFrames", data)
 
-
     data["done1"] = False
     state["collapsed1"] = False
-
 
     state["validationTeamId"] = None
     state["validationWorkspaceId"] = None
     state["validationProjectId"] = None
     state["validationDatasets"] = []
     state["validationAllDatasets"] = True
-
-
-"""
-RUN mkdir /FairMOT/data && cd /FairMOT/data &&  wget $dataset_link && tar -xvf *.tar && mv ds_* SLY_MOT
-RUN rm -f -r /FairMOT/data/*.tar && cd /FairMOT/data/SLY_MOT/ && mkdir -p labels_with_ids/train && mkdir images && mkdir -p labels_with_ids/train && cp -r train images/test && mv train images
-
-RUN cd /FairMOT/ && git pull
-
-RUN pip install -r /FairMOT/requirements.txt 
-# RUN python /FairMOT/src/rename_img_seq.py
-RUN python /FairMOT/src/gen_labels.py
-RUN cd /FairMOT/src/ && python ./gen_data_path.py
-
-"""
 
 
 def download_projects_sly(projects_ids):
@@ -96,7 +73,7 @@ def convert_projects_mot(projects_ids):
 
 @g.my_app.callback("download_project_train")
 @sly.timeit
-# @g.my_app.ignore_errors_and_show_dialog_window()
+@g.my_app.ignore_errors_and_show_dialog_window()
 def download_project_train(api: sly.api, task_id, context, state, app_logger):
     download_projects_sly([g.project_id])
     convert_projects_mot([g.project_id])

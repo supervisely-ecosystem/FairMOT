@@ -11,18 +11,13 @@ import ffmpeg
 
 
 progress_index = 1
-_images_infos = None  # dataset_name -> image_name -> image_info
-_cache_base_filename = os.path.join(g.my_app.data_dir, "images_info")
-_cache_path = _cache_base_filename + ".db"
-_image_id_to_paths = {}
-
 object_ann_info = None
 
 
 def init(data, state):
     data["projectId"] = g.project_info.id
     data["projectName"] = g.project_info.name
-    data["projectItemsCount"] = g.project_info.items_count
+    data["projectItemsCount"] = g.project_info.items_count if g.project_info.items_count else 0
     data["projectPreviewUrl"] = g.api.image.preview_url(g.project_info.reference_image_url, 100, 100)
 
     init_progress("InputProject", data)

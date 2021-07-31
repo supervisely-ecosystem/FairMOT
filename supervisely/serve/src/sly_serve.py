@@ -64,15 +64,22 @@ def get_session_info(api: sly.Api, task_id, context, state, app_logger):
 @g.my_app.callback("inference_video_id")  # to video, input_video_id[frame_range] -> output_annotation_for_video
 @sly.timeit
 @send_error_data
-def inference_image_id(api: sly.Api, task_id, context, state, app_logger):
+def inference_video_id(api: sly.Api, task_id, context, state, app_logger):
     app_logger.debug("Input data", extra={"state": state})
-    video_id = state["video_id"]
-    frames_range = state["frames_range"]
+    video_id = state["videoId"]
+    frames_range = state.get("framesRange", None)
+    conf_thres = state.get("confThres", 0)
+    is_preview = state.get("isPreview", False)
 
-    nn_utils.process_video(video_id, frames_range)
+    preview_video_url = None
+
+    annotations, preview_video_path = nn_utils.process_video(video_id, frames_range, conf_thres, is_preview)
+    if is_preview:
+        file_info = nn_utils.upload_video_to_sly(preview_video_path)
+        preview_video_url = file_info.full_storage_url
 
     request_id = context["request_id"]
-    g.my_app.send_response(request_id, data=predictions)
+    g.my_app.send_response(request_id, data={'ann': annotations.to_json(), 'preview_url': preview_video_url})
 
 
 @g.my_app.callback("inference_batch_ids")
@@ -80,14 +87,6 @@ def inference_image_id(api: sly.Api, task_id, context, state, app_logger):
 @send_error_data
 def inference_batch_ids(api: sly.Api, task_id, context, state, app_logger):
     raise NotImplementedError("Please contact tech support")
-
-
-def debug_inference():
-    image_id = 903277
-    image_path = f"./data/images/{image_id}.jpg"
-    if not sly.fs.file_exists(image_path):
-        g.my_app.public_api.image.download_path(image_id, image_path)
-    res = nn_utils.inference_model(g.model, image_path, topn=5)
 
 
 def main():

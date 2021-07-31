@@ -45,8 +45,8 @@ def init(data, state):
     data["previewPredLinks"] = []
     state["currEpochPreview"] = 1
 
-    state["collapsed6"] = not True
-    state["disabled6"] = not True
+    state["collapsed6"] = True
+    state["disabled6"] = True
     state["done6"] = False
 
     data["outputName"] = None
@@ -97,10 +97,6 @@ def init_charts(data, state):
     data["chartValMap"] = init_chart("mAP", names=["mAP"], xs=[[]], ys=[[]], smoothing=0.6, xdecimals=2)
 
 
-    #
-    # data["chartTime"] = init_chart("Time", names=["time"], xs=[[]], ys=[[]], xdecimals=2)
-    # data["chartDataTime"] = init_chart("Data Time", names=["data_time"], xs=[[]], ys=[[]], xdecimals=2)
-    # data["chartMemory"] = init_chart("Memory", names=["memory"], xs=[[]], ys=[[]], xdecimals=2)
     state["smoothing"] = 0.6
 
 
@@ -211,7 +207,6 @@ def dump_checkpoints():
     exp_id = g.api.app.get_field(g.task_id, 'state.expId')
 
     checkpoints_dir = f"../exp/mot/{exp_id}/"
-
     checkpoints_paths_src = g.get_files_paths(checkpoints_dir, ['.pth'])
 
     for checkpoints_path in checkpoints_paths_src:
@@ -267,6 +262,7 @@ def set_finish_train_flag(api: sly.Api, task_id, context, state, app_logger):
 
 @g.my_app.callback("previewByEpoch")
 @sly.timeit
+@g.my_app.ignore_errors_and_show_dialog_window()
 def preview_by_epoch(api: sly.Api, task_id, context, state, app_logger):
     if len(g.api.app.get_field(g.task_id, 'data.previewPredLinks')) > 0:
         index = int(state['currEpochPreview'] / state["valInterval"]) - 1
@@ -277,7 +273,7 @@ def preview_by_epoch(api: sly.Api, task_id, context, state, app_logger):
 
 @g.my_app.callback("train")
 @sly.timeit
-# @g.my_app.ignore_errors_and_show_dialog_window()
+@g.my_app.ignore_errors_and_show_dialog_window()
 def train(api: sly.Api, task_id, context, state, app_logger):
     try:
         sly_dir_path = os.getcwd()

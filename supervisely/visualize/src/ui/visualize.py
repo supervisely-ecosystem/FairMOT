@@ -369,10 +369,18 @@ def add_figures_from_mot_to_sly(ann_path, ann_keeper, video_shape):
                                         frame_index=frame_index)
 
 
+def get_model_class_name():
+    class_info_path = os.path.join(g.local_info_dir, 'class_info.json')
+
+    with open(class_info_path, 'r') as class_info_file:
+        class_data = json.load(class_info_file)
+
+    return class_data['name']
+
 def process_video(video_path, ann_path, project_id=None, dataset_id=None):
     exp_id = g.api.app.get_field(g.task_id, 'state.expId')
 
-    class_name = 'tracking object'
+    class_name = get_model_class_name()
     objects_count = get_objects_count(ann_path)
     video_shape = get_video_shape(video_path)
 

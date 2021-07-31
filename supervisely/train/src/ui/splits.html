@@ -3,7 +3,7 @@
                     Preview final data statistics in next sections"
           :options="{collapsable: true}"
           :collapsed.sync="state.collapsed3"
-          :disabled="{disabled: state.disabled3, message: 'complete stage 1'}"
+          :disabled="{disabled: state.disabled3, message: 'complete stage 2'}"
           ref="step3"
 >
     <!--    v-model="state.splitMethod"-->
@@ -55,9 +55,8 @@
                 <div>Select one or several datasets for every split</div>
             </el-radio>
             <sly-field title="INFO: How to make equal splits"
-                       description="choose the same dataset(s) for train/validation to make splits equal. Can be used for debug
-                                    and for tiny projects"
-                       style="padding-top: 16px; padding-bottom: 0">
+                       description="choose the same dataset(s) for train/validation to make splits equal"
+                       style="padding-top: 0; padding-bottom: 0">
 
                 <sly-icon slot="icon" :options="{ color: '#13ce66', bgColor: '#e1f7eb', rounded: false }">
                     <i class="zmdi zmdi-info-outline"></i>
@@ -105,21 +104,23 @@
                 Based on videos tags
                 <div>videos should have assigned train or val tag</div>
             </el-radio>
-            <sly-field title="Notice 1: How to create train/val splits based on tags"
-                       description="Option 1: use app 'Assign train/val tags to videos' from Ecosystem. Option 2: manually assign
-                                    train/val tags to videos. Option 3: use other way you want - python SDK, API, ...
-                                    Please, contact tech support if your case is not covered">
-                <sly-icon slot="icon" :options="{ color: '#fba607', bgColor: '#ffe9da', rounded: false }">
-                    <i class="zmdi zmdi-help"></i>
+            <sly-field title="INFO: How to create train/val splits based on tags"
+                       description="you can use app 'Assign train/val tags to videos' from Ecosystem or define tags manually"
+                       style="padding-top: 0; padding-bottom: 0">
+
+                <sly-icon slot="icon" :options="{ color: '#13ce66', bgColor: '#e1f7eb', rounded: false }">
+                    <i class="zmdi zmdi-info-outline"></i>
                 </sly-icon>
             </sly-field>
-            <sly-field title="Notice 2: How to make equal splits"
-                       description="Choose the same tag for train/validation to make splits equal. Can be used for debug
-                                    and for tiny projects">
-                <sly-icon slot="icon" :options="{ color: '#fba607', bgColor: '#ffe9da', rounded: false }">
-                    <i class="zmdi zmdi-info"></i>
+            <sly-field title="INFO: How to make equal splits"
+                       description="choose the same tag for train/validation to make splits equal"
+                       style="padding-top: 0; padding-bottom: 0">
+
+                <sly-icon slot="icon" :options="{ color: '#13ce66', bgColor: '#e1f7eb', rounded: false }">
+                    <i class="zmdi zmdi-info-outline"></i>
                 </sly-icon>
             </sly-field>
+
             <sly-field title="Train tag" description="all videos with this tag are considered as training set">
                 <sly-select-tag
                         :disabled="data.done3"
@@ -136,15 +137,6 @@
                         :tags.sync="state.valTagName"
                         :options="{'showLabel': false}">
                 </sly-select-tag>
-            </sly-field>
-            <sly-field title="Videos without selected tags"
-                       description="Choose what to do with untagged videos">
-                <el-select v-model="state.untaggedVideos" :disabled="data.done3" placeholder="Select"
-                           style="width: 280px;">
-                    <el-option key="ignore" label="ignore untagged videos" value="ignore"></el-option>
-                    <el-option key="train" label="add untagged videos to train set" value="train"></el-option>
-                    <el-option key="val" label="add untagged videos to val set" value="val"></el-option>
-                </el-select>
             </sly-field>
         </el-tab-pane>
 

@@ -4,7 +4,6 @@ import sys
 import supervisely_lib as sly
 import pickle
 
-
 my_app = sly.AppService()
 api = my_app.public_api
 task_id = my_app.task_id
@@ -22,6 +21,8 @@ if project_info is None:  # for debug
 project_dir = os.path.join(my_app.data_dir, "visualize_fairMOT")
 project_meta = sly.ProjectMeta.from_json(api.project.get_meta(project_id))
 
+model_meta = None
+
 temp_files = os.path.join(project_dir, "temp_files")
 
 if os.path.exists(temp_files):  # clean temp
@@ -34,6 +35,8 @@ projects_dir = os.path.join(temp_files, "projects")
 sly.fs.mkdir(projects_dir)
 checkpoints_dir = os.path.join(temp_files, "checkpoints")
 sly.fs.mkdir(checkpoints_dir)
+local_info_dir = os.path.join(temp_files, "info")
+sly.fs.mkdir(local_info_dir)
 
 grid_video_dir = os.path.join(temp_files, "grid_video")
 sly.fs.mkdir(grid_video_dir)
@@ -72,8 +75,6 @@ def load_dumped(filename):
     load_path = os.path.join(my_app.data_dir, 'dumps', filename)
     with open(load_path, 'rb') as dumped:
         return pickle.load(dumped)
-
-
 
 def get_files_paths(src_dir, extensions):
     files_paths = []

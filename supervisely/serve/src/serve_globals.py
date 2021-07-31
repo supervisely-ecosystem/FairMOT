@@ -30,19 +30,21 @@ device = os.environ['modal.state.device']
 remote_exp_dir = str(pathlib.Path(remote_weights_path).parents[1])
 remote_info_dir = os.path.join(remote_exp_dir, "info")
 
-local_info_dir = os.path.join(my_app.data_dir, "info")
+serve_mot_dir = os.path.join(my_app.data_dir, 'FairMOT/serve/')
+
+local_info_dir = os.path.join(serve_mot_dir, "info")
 sly.fs.mkdir(local_info_dir)
 
-input_raw = os.path.join(my_app.data_dir, "input_raw")
+input_raw = os.path.join(serve_mot_dir, "input_raw")
 sly.fs.mkdir(input_raw)
 
-input_converted = os.path.join(my_app.data_dir, "input_converted")
+input_converted = os.path.join(serve_mot_dir, "input_converted")
 sly.fs.mkdir(input_converted)
 
-output_mot = os.path.join(my_app.data_dir, "output_mot")
+output_mot = os.path.join(serve_mot_dir, "output_mot")
 sly.fs.mkdir(output_mot)
 
-local_weights_path = os.path.join(my_app.data_dir, sly.fs.get_file_name_with_ext(remote_weights_path))
+local_weights_path = os.path.join(serve_mot_dir, sly.fs.get_file_name_with_ext(remote_weights_path))
 
 model = None
 video_data = None

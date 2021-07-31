@@ -9,10 +9,7 @@ from input_data import object_ann_info
 import splits
 
 
-
 def init(data, state):
-    project_info = g.project_info
-    # project_meta = g.project_meta
     project_meta = g.api.project.get_meta(id=g.project_id)
 
     rows_names = generate_rows_by_ann(project_meta)
@@ -24,7 +21,6 @@ def init(data, state):
             break
 
     rows_names = sorted(rows_names, key=lambda k: k['isDisabled'])
-    # get_project_ann_info(g.project_id, all_ds=True)
 
     data["selectClassTable"] = rows_names
     data["classDatasets"] = []
@@ -33,8 +29,8 @@ def init(data, state):
     state["loadingStats"] = False
 
     data["done2"] = False
-    state["collapsed2"] = not True
-    state["disabled2"] = not True
+    state["collapsed2"] = True
+    state["disabled2"] = True
 
 
 def restart(data, state):
@@ -85,7 +81,7 @@ def generate_selector_list(dataset_names):
 
 @g.my_app.callback("select_class")
 @sly.timeit
-# @g.my_app.ignore_errors_and_show_dialog_window()
+@g.my_app.ignore_errors_and_show_dialog_window()
 def select_class(api: sly.api, task_id, context, state, app_logger):
     table = g.api.app.get_field(g.task_id, 'data.selectClassTable')
     class_label = state['selectedClass']
@@ -110,7 +106,7 @@ def select_class(api: sly.api, task_id, context, state, app_logger):
 
 @g.my_app.callback("load_objects_stats")
 @sly.timeit
-# @g.my_app.ignore_errors_and_show_dialog_window()
+@g.my_app.ignore_errors_and_show_dialog_window()
 def load_objects_stats(api: sly.api, task_id, context, state, app_logger):
     objects_ann_info = g.load_dumped('ann_info.pkl')
     table = g.api.app.get_field(g.task_id, 'data.selectClassTable')

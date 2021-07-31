@@ -52,14 +52,19 @@ def get_file_sizes(sly_fs_path):
     return sum(size_b)
 
 
-def download_checkpoints(sly_fs_path):
-    if sly.fs.dir_exists(g.checkpoints_dir):
-        sly.fs.clean_dir(g.checkpoints_dir)
+def download_checkpoints(sly_fs_checkpoints_path):
+    sly.fs.clean_dir(g.checkpoints_dir)
+    sly.fs.clean_dir(g.local_info_dir)
 
-    files_size_b = get_file_sizes(sly_fs_path)
+    files_size_b = get_file_sizes(sly_fs_checkpoints_path)
     download_progress = get_progress_cb(2, "Download checkpoints", files_size_b, is_size=True, min_report_percent=1)
 
-    g.api.file.download_directory(g.team_id, sly_fs_path, g.checkpoints_dir, progress_cb=download_progress)
+    sly_fs_info_path = os.path.join(str(Path(sly_fs_checkpoints_path).parents[0]), 'info/')
+    g.api.file.download_directory(g.team_id, sly_fs_info_path, g.local_info_dir)
+    if not os.path.isfile(f'{g.local_info_dir}/class_info.json'):
+        raise FileNotFoundError('../info/class_info.json not found')
+
+    g.api.file.download_directory(g.team_id, sly_fs_checkpoints_path, g.checkpoints_dir, progress_cb=download_progress)
 
     reset_progress(2)
     return 0
@@ -115,7 +120,7 @@ def load_models_handler(api: sly.Api, task_id, context, state, app_logger):
         #         state['selectedClass'] = row_name['name']
         #         break
         #
-        table_rows = sorted(table_rows, key=lambda k: k['isDisabled'])
+        table_rows = sorted(table_rows, key=lambda k: k['epoch'])
 
         fill_table(table_rows)
 

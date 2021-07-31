@@ -3,7 +3,7 @@
           ref="step6"
           :options="{collapsable: true}"
           :collapsed.sync="state.collapsed6"
-          :disabled="{disabled: state.disabled6, message: 'complete stage 4'}">
+          :disabled="{disabled: state.disabled6, message: 'complete stage 5'}">
     <el-button v-if="!state.done6 && !data.progressUploadDir"
                type="primary" class="regular"
                @click="state.trainStarted = true; command('train')"

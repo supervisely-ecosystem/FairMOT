@@ -16,11 +16,19 @@
             class="regular"
             :loading="data.progressInputProject"
             @click="command('download_projects_handler')"
-            v-if="!data.done1">
+            v-if="!data.done1 && data.projectItemsCount > 0">
         Download
     </el-button>
+    <sly-field v-if="data.projectItemsCount === 0" title="WARNING: No videos found in project"
+               description="please reselect input project"
+               style="margin-bottom: 0"
+    >
+        <sly-icon slot="icon" :options="{ color: '#fba607', bgColor: '#ffe9da', rounded: false }">
+            <i class="zmdi zmdi-alert-triangle"></i>
+        </sly-icon>
+    </sly-field>
 
-    <div v-if="data.progressInputProject && !data.done1" class="mb5" style="padding-top: 20px">
+    <div v-if="data.progressInputProject && !data.done1" class="" style="padding-top: 14px; margin-bottom: 0">
         <div style="color: #20a0ff">{{data.progressInputProject}}: {{data.progressCurrentInputProject}} / {{data.progressTotalInputProject}}</div>
         <el-progress :percentage="data.progressPercentInputProject"></el-progress>
     </div>

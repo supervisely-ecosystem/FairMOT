@@ -20,7 +20,7 @@
   "headless": true,
   "instance_version": "6.4.18",
   "session_tags": [
-    "deployed_nn_cls"
+    "deployed_nn_tracking"
   ],
   "context_menu": {
     "target": ["files_file"]
