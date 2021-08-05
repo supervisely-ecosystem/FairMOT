@@ -3,6 +3,10 @@ from pathlib import Path
 import sys
 import supervisely_lib as sly
 import pickle
+from dotenv import load_dotenv  # pip install python-dotenv\
+
+load_dotenv("../debug.env")
+load_dotenv("../secret_debug.env", override=True)
 
 
 my_app = sly.AppService()
@@ -37,14 +41,17 @@ info_dir = os.path.join(experiment_dir, "info")
 sly.fs.mkdir(info_dir)
 
 
-root_source_dir = str(Path(sys.argv[0]).parents[3])
+root_source_dir = str(Path(os.path.abspath(sys.argv[0])).parents[3])
 sly.logger.info(f"Root source directory: {root_source_dir}")
 sys.path.append(root_source_dir)
+
+fair_mot_src = os.path.join(root_source_dir, "src")
+sys.path.append(fair_mot_src)
+
 source_path = str(Path(sys.argv[0]).parents[0])
-sly.logger.info(f"App source directory: {source_path}")
 sys.path.append(source_path)
+
 ui_sources_dir = os.path.join(source_path, "ui")
-sly.logger.info(f"UI source directory: {ui_sources_dir}")
 sys.path.append(ui_sources_dir)
 sly.logger.info(f"Added to sys.path: {ui_sources_dir}")
 

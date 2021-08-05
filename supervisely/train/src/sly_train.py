@@ -4,6 +4,8 @@ import ui as ui
 
 
 def main():
+
+
     sly.logger.info("Script arguments", extra={
         "context.teamId": g.team_id,
         "context.workspaceId": g.workspace_id,

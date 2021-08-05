@@ -151,7 +151,7 @@ def convert_project(input_project_path, output_project_path):
                     width = rectangle_geom.width
                     height = rectangle_geom.height
                     conf_val = 1
-                    curr_gt_data = '{},{},{},{},{},{},{},{},{},{}\n'.format(frame_index + 1,
+                    curr_gt_data = '{},{},{},{},{},{},{},{},{},{}\n'.format(frame.index + 1,
                                                                             id_to_video_obj[figure.video_object],
                                                                             left, top, width - 1, height - 1,
                                                                             conf_val, -1, -1, -1)

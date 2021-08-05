@@ -171,8 +171,8 @@ def organize_data(state):
 
     remove_negative_labels(root_path)
 
-    gen_data_path(root_path)
     gen_labels(root_path)
+    gen_data_path(root_path)
 
     clean_exp_dir()
 
@@ -275,6 +275,7 @@ def preview_by_epoch(api: sly.Api, task_id, context, state, app_logger):
 @sly.timeit
 @g.my_app.ignore_errors_and_show_dialog_window()
 def train(api: sly.Api, task_id, context, state, app_logger):
+
     try:
         sly_dir_path = os.getcwd()
         os.chdir('../../../src')
@@ -312,6 +313,7 @@ def train(api: sly.Api, task_id, context, state, app_logger):
         g.api.app.set_fields(g.task_id, fields)
     except Exception as e:
         api.app.set_field(task_id, "state.trainStarted", False)
+        os.chdir(sly_dir_path)
         raise e  # app will handle this error and show modal window
 
     os.chdir(sly_dir_path)

@@ -70,6 +70,9 @@ def gen_labels(ds_root):
                     with open(label_fpath, 'a') as f:
                         f.write(label_str)
 
+
+
+
         with open(f'{osp.join(ds_root, "classes_mapping.json")}', 'w') as fp:
             json.dump(used_labels, fp)
 

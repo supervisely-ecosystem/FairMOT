@@ -123,7 +123,7 @@ def split_videos_randomly_by_counts(train_count, val_count):
     counts = {'train': train_count,
               'val': val_count}
 
-    ds_paths = get_ds_paths()
+    ds_paths = get_ds_paths([g.project_info.id])
     for ds_path in ds_paths:
         train_videos_paths_temp, \
         val_videos_paths_temp = get_video_paths_by_ds_and_counts(counts, ds_path)
