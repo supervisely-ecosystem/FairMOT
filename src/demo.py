@@ -12,6 +12,7 @@ from tracking_utils.utils import mkdir_if_missing
 from tracking_utils.log import logger
 import datasets.dataset.jde as datasets
 from track import eval_seq
+import glob
 
 
 logger.setLevel(logging.INFO)
@@ -21,20 +22,43 @@ def demo(opt):
     result_root = opt.output_root if opt.output_root != '' else '.'
     mkdir_if_missing(result_root)
 
-    logger.info('Starting tracking...')
-    dataloader = datasets.LoadVideo(opt.input_video, opt.img_size)
-    result_filename = os.path.join(result_root, 'results.txt')
-    frame_rate = dataloader.frame_rate
+    models_paths = sorted(glob.glob(os.path.join(opt.load_model, '*.pth')))
+    # models_paths = [models_paths[-1]]
+    # print(models_paths)
+    for model_path in models_paths:
+        print(model_path)
+        opt.load_model = model_path
+        for index, video_path in enumerate(sorted(glob.glob(
+                os.path.join(opt.input_video, '*')))):
 
-    frame_dir = None if opt.output_format == 'text' else osp.join(result_root, 'frame')
-    eval_seq(opt, dataloader, 'mot', result_filename,
-             save_dir=frame_dir, show_image=False, frame_rate=frame_rate,
-             use_cuda=opt.gpus!=[-1])
+            exp_name = opt.load_model.split('/')[-2]
+            e = model_path.split('/')[-1].split('_')[-1][:-4]
 
-    if opt.output_format == 'video':
-        output_video_path = osp.join(result_root, 'MOT16-03-results.mp4')
-        cmd_str = 'ffmpeg -f image2 -i {}/%05d.jpg -b 5000k -c:v mpeg4 {}'.format(osp.join(result_root, 'frame'), output_video_path)
-        os.system(cmd_str)
+            logger.info(f'e: {e}')
+            logger.info(f'exp: {exp_name}')
+            logger.info('Starting tracking...')
+            logger.info(f'vp: {video_path}')
+            dataloader = datasets.LoadVideo(video_path, opt.img_size)
+
+            frame_rate = dataloader.frame_rate
+
+            # frame_dir = None if opt.output_format == 'text' else osp.join(result_root, exp_name, e, f'frame_{index}')
+            frame_dir = osp.join(result_root, exp_name, e, f'frame_{index}')
+            result_filename = osp.join(result_root, exp_name, e, f'results_{index}.txt')
+
+            os.makedirs(frame_dir, exist_ok=True)
+
+            eval_seq(opt, dataloader, 'mot', result_filename,
+                     save_dir=frame_dir, show_image=False, frame_rate=frame_rate,
+                     use_cuda=opt.gpus!=[-1])
+
+            if opt.output_format == 'video':
+
+                output_video_path = osp.join(result_root, exp_name, e)
+                os.makedirs(output_video_path, exist_ok=True)
+                output_video_path = osp.join(result_root, exp_name, e, f'results_{index}.mp4')
+                cmd_str = 'ffmpeg -f image2 -i {}/%05d.jpg -b 5000k -c:v mpeg4 {}'.format(frame_dir, output_video_path)
+                os.system(cmd_str)
 
 
 if __name__ == '__main__':

@@ -1,0 +1,169 @@
+<sly-card title="Train / Validation splits"
+          subtitle="Define how to split your data to train/val subsets. Number of images in splits is approximate.
+                    Preview final data statistics in next sections"
+          :options="{collapsable: true}"
+          :collapsed.sync="state.collapsed3"
+          :disabled="{disabled: state.disabled3, message: 'complete stage 2'}"
+          ref="step3"
+>
+    <!--    v-model="state.splitMethod"-->
+    <el-tabs type="border-card" class="el-tabs-cards" v-model="state.splitMethod">
+        <el-tab-pane name="random" :disabled="data.done3">
+            <el-radio slot="label" v-model="state.splitMethod" label="random" :disabled="data.done3">
+                Random
+                <div>Shuffle data and split with defined probability</div>
+            </el-radio>
+            <el-table :data="data.randomSplit" class="ultra-table">
+                <el-table-column label="Info" width="180">
+                    <template scope="scope">
+                        <el-tag :type="scope.row.type">
+                            <i v-if="scope.row.name !== 'total'" class="zmdi zmdi-tag mr5"></i>{{scope.row.name}}
+                        </el-tag>
+                    </template>
+                </el-table-column>
+                <el-table-column label="Number of videos" width="180">
+                    <template scope="scope">
+                        <span style="margin-left: 10px">{{state.randomSplit.count[scope.row.name]}}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column label="Percent of videos">
+                    <template scope="scope">
+                        <div v-if="scope.row.name !== 'train'">
+                            <span style="margin-left: 10px">{{state.randomSplit.percent[scope.row.name]}}%</span>
+                        </div>
+
+                        <el-slider v-if="scope.row.name === 'train'"
+                                   v-model="state.randomSplit.percent.train"
+                                   :disabled="state.randomSplit.sliderDisabled || data.done3"
+                                   show-input :min="1" :max="99"
+                                   style="flex:1; max-width: 99%; margin-left: 15px;"
+                                   @input="
+                                   state.randomSplit.count.train =
+                                   Math.min(parseInt(data.totalVideosCount * state.randomSplit.percent.train / 100, 10),
+                                            data.totalVideosCount - 1);
+                                   state.randomSplit.count.train = Math.max(state.randomSplit.count.train, 1)
+                                   state.randomSplit.count.val = data.totalVideosCount - state.randomSplit.count.train;
+                                   state.randomSplit.percent.val = 100 - state.randomSplit.percent.train"
+                        ></el-slider>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </el-tab-pane>
+        <el-tab-pane name="datasets" :disabled="data.done3">
+            <el-radio slot="label" v-model="state.splitMethod" label="datasets" :disabled="data.done3">
+                Based on datasets
+                <div>Select one or several datasets for every split</div>
+            </el-radio>
+            <sly-field title="INFO: How to make equal splits"
+                       description="choose the same dataset(s) for train/validation to make splits equal"
+                       style="padding-top: 0; padding-bottom: 0">
+
+                <sly-icon slot="icon" :options="{ color: '#13ce66', bgColor: '#e1f7eb', rounded: false }">
+                    <i class="zmdi zmdi-info-outline"></i>
+                </sly-icon>
+            </sly-field>
+
+            <sly-field title="Train dataset(s)"
+                       description="all videos in selected dataset(s) are considered as training set">
+
+                <el-select v-model="state.trainDatasets"
+                           multiple
+                           placeholder="Select dataset(s)"
+                           :disabled="data.done3">
+                    <el-option
+                            v-for="item in data.classDatasets"
+
+                            :label="item.label"
+                            :value="item.value"
+                            :disabled="data.done3">
+                    </el-option>
+                </el-select>
+
+            </sly-field>
+            <sly-field title="Validation dataset(s)"
+                       description="all videos in selected dataset(s) are considered as validation set">
+                <el-select v-model="state.valDatasets"
+                           multiple
+                           placeholder="Select"
+                           :disabled="data.done3">
+                    <el-option
+                            v-for="item in data.classDatasets"
+
+                            :label="item.label"
+                            :value="item.value"
+                            :disabled="data.done3"
+                    >
+
+
+                    </el-option>
+                </el-select>
+            </sly-field>
+        </el-tab-pane>
+        <el-tab-pane name="tags" :disabled="true">
+            <el-radio slot="label" v-model="state.splitMethod" label="tags" :disabled="true">
+                Based on videos tags
+                <div>videos should have assigned train or val tag</div>
+            </el-radio>
+            <sly-field title="INFO: How to create train/val splits based on tags"
+                       description="you can use app 'Assign train/val tags to videos' from Ecosystem or define tags manually"
+                       style="padding-top: 0; padding-bottom: 0">
+
+                <sly-icon slot="icon" :options="{ color: '#13ce66', bgColor: '#e1f7eb', rounded: false }">
+                    <i class="zmdi zmdi-info-outline"></i>
+                </sly-icon>
+            </sly-field>
+            <sly-field title="INFO: How to make equal splits"
+                       description="choose the same tag for train/validation to make splits equal"
+                       style="padding-top: 0; padding-bottom: 0">
+
+                <sly-icon slot="icon" :options="{ color: '#13ce66', bgColor: '#e1f7eb', rounded: false }">
+                    <i class="zmdi zmdi-info-outline"></i>
+                </sly-icon>
+            </sly-field>
+
+            <sly-field title="Train tag" description="all videos with this tag are considered as training set">
+                <sly-select-tag
+                        :disabled="data.done3"
+                        :project-id="data.projectId"
+                        :tags.sync="state.trainTagName"
+                        :options="{'showLabel': false}">
+                </sly-select-tag>
+            </sly-field>
+            <sly-field title="Validation tag"
+                       description="all videos with this tag are considered as validation set">
+                <sly-select-tag
+                        :disabled="data.done3"
+                        :project-id="data.projectId"
+                        :tags.sync="state.valTagName"
+                        :options="{'showLabel': false}">
+                </sly-select-tag>
+            </sly-field>
+        </el-tab-pane>
+
+    </el-tabs>
+
+    <el-button
+            type="primary"
+            class="mt10 regular"
+            :loading="state.splitInProgress"
+            v-if="!data.done3"
+            @click="command('create_splits')">
+        Create
+    </el-button>
+
+    <div v-if="data.done3 && !state.splitInProgress" class="mt10">
+        <div>
+            <i class="zmdi zmdi-check-circle mr5" style="color: #13ce66"></i>
+            <span style="color: #5a6772;">
+                Splits have been successfully created: {{data.trainVideosCount}} videos in train,
+                {{data.valVideosCount}} videos in val
+            </span>
+        </div>
+        <el-button type="warning" class="regular mt10" :plain="true"
+                   @click="state.restartFrom = 3;"
+                   v-if="data.done3 && !state.started"
+                   :disabled="state.trainStarted">
+            <i class="zmdi zmdi-rotate-left mr5"></i> reselect
+        </el-button>
+    </div>
+</sly-card>

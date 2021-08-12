@@ -1,0 +1,22 @@
+{
+  "name": "Train FairMOT",
+  "type": "app",
+  "categories": [
+    "neural network",
+    "track"
+  ],
+  "description": "Dashboard to configure, start and monitor training",
+  "docker_image": "supervisely/fairmot:1.0.0",
+  "main_script": "supervisely/train/src/sly_train.py",
+  "gui_template": "supervisely/train/src/gui.html",
+  "task_location": "workspace_tasks",
+  "need_gpu": true,
+  "icon": "https://imgur.com/NanJ8gT.png",
+  "icon_cover": true,
+  "context_menu": {
+    "target": ["video_project"],
+    "context_root": "Neural Networks",
+    "context_category": "FairMOT"
+  },
+  "instance_version": "6.4.18"
+}

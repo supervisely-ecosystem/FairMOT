@@ -21,6 +21,9 @@ from opts import opts
 from models.decode import mot_decode
 from utils.post_process import ctdet_post_process
 
+from sly_train_progress import get_progress_cb, reset_progress, init_progress  # SLY CODE
+import sly_train_renderer  # SLY CODE
+
 
 def post_process(opt, dets, meta):
     dets = dets.detach().cpu().numpy()
@@ -71,7 +74,7 @@ def test_det(
     print('Creating model...')
     model = create_model(opt.arch, opt.heads, opt.head_conv)
     model = load_model(model, opt.load_model)
-    #model = torch.nn.DataParallel(model)
+    # model = torch.nn.DataParallel(model)
     model = model.to(opt.device)
     model.eval()
 
@@ -85,9 +88,13 @@ def test_det(
     outputs, mAPs, mR, mP, TP, confidence, pred_class, target_class, jdict = \
         [], [], [], [], [], [], [], [], []
     AP_accum, AP_accum_count = np.zeros(nC), np.zeros(nC)
+
+    sly_iter_progress = get_progress_cb("Iter", "Validation iter", len(dataloader), min_report_percent=1)  # SLY CODE
+    show_preview_once = True  # SLY CODE
+
     for batch_i, (imgs, targets, paths, shapes, targets_len) in enumerate(dataloader):
         t = time.time()
-        #seen += batch_size
+        # seen += batch_size
 
         output = model(imgs.cuda())[-1]
         origin_shape = shapes[0]
@@ -103,26 +110,27 @@ def test_det(
         hm = output['hm'].sigmoid_()
         wh = output['wh']
         reg = output['reg'] if opt.reg_offset else None
-        opt.K = 200
+        opt.K = 200  # SLY CODE commented
         detections, inds = mot_decode(hm, wh, reg=reg, ltrb=opt.ltrb, K=opt.K)
         # Compute average precision for each sample
         targets = [targets[i][:int(l)] for i, l in enumerate(targets_len)]
         for si, labels in enumerate(targets):
             seen += 1
-            #path = paths[si]
-            #img0 = cv2.imread(path)
+            # path = paths[si]
+            # img0 = cv2.imread(path)
             dets = detections[si]
             dets = dets.unsqueeze(0)
             dets = post_process(opt, dets, meta)
             dets = merge_outputs(opt, [dets])[1]
 
-            #remain_inds = dets[:, 4] > opt.det_thres
-            #dets = dets[remain_inds]
+            remain_inds = dets[:, 4] > opt.det_thres  # SLY_CODE uncomment
+            dets = dets[remain_inds]  # SLY_CODE uncomment
             if dets is None:
+                dets = []
                 # If there are labels but no detections mark as zero AP
-                if labels.size(0) != 0:
-                    mAPs.append(0), mR.append(0), mP.append(0)
-                continue
+                # if labels.size(0) != 0:
+                #     mAPs.append(0), mR.append(0), mP.append(0)
+                # continue
 
             # If no labels add number of detections as incorrect
             correct = []
@@ -140,26 +148,30 @@ def test_det(
                 target_boxes[:, 1] *= height
                 target_boxes[:, 3] *= height
 
-                '''
-                path = paths[si]
-                img0 = cv2.imread(path)
-                img1 = cv2.imread(path)
-                for t in range(len(target_boxes)):
-                    x1 = target_boxes[t, 0]
-                    y1 = target_boxes[t, 1]
-                    x2 = target_boxes[t, 2]
-                    y2 = target_boxes[t, 3]
-                    cv2.rectangle(img0, (x1, y1), (x2, y2), (0, 255, 0), 4)
-                cv2.imwrite('gt.jpg', img0)
-                for t in range(len(dets)):
-                    x1 = dets[t, 0]
-                    y1 = dets[t, 1]
-                    x2 = dets[t, 2]
-                    y2 = dets[t, 3]
-                    cv2.rectangle(img1, (x1, y1), (x2, y2), (0, 255, 0), 4)
-                cv2.imwrite('pred.jpg', img1)
-                abc = ace
-                '''
+                if show_preview_once:  # SLY CODE
+                    path = paths[si]
+                    img0 = cv2.imread(path)
+                    img0 = cv2.cvtColor(img0, cv2.COLOR_BGR2RGB)
+                    img1 = cv2.imread(path)
+                    img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2RGB)
+                    for t in range(len(target_boxes)):
+                        x1 = int(target_boxes[t, 0])
+                        y1 = int(target_boxes[t, 1])
+                        x2 = int(target_boxes[t, 2])
+                        y2 = int(target_boxes[t, 3])
+                        cv2.rectangle(img0, (x1, y1), (x2, y2), (0, 255, 0), 4)
+                    # cv2.imwrite('gt.jpg', img0)
+                    for t in range(len(dets)):
+                        x1 = int(dets[t, 0])
+                        y1 = int(dets[t, 1])
+                        x2 = int(dets[t, 2])
+                        y2 = int(dets[t, 3])
+                        cv2.rectangle(img1, (x1, y1), (x2, y2), (0, 255, 0), 4)
+                    # cv2.imwrite('pred.jpg', img1)
+
+                    sly_train_renderer.preview_predictions(img0, img1)
+                    show_preview_once = False
+
 
                 detected = []
                 for *pred_bbox, conf in dets:
@@ -196,17 +208,25 @@ def test_det(
             mean_R = np.sum(mR) / (AP_accum_count + 1E-16)
             mean_P = np.sum(mP) / (AP_accum_count + 1E-16)
 
+
+
         if batch_i % print_interval == 0:
             # Print image mAP and running mean mAP
             print(('%11s%11s' + '%11.3g' * 4 + 's') %
                   (seen, dataloader.dataset.nF, mean_P, mean_R, mean_mAP, time.time() - t))
+
+        sly_iter_progress(1)  # SLY CODE
+
     # Print mAP per class
     print('%11s' * 5 % ('Image', 'Total', 'P', 'R', 'mAP'))
 
     print('AP: %-.4f\n\n' % (AP_accum[0] / (AP_accum_count[0] + 1E-16)))
 
+    reset_progress("Iter")  # SLY CODE
+
     # Return mAP
     return mean_mAP, mean_R, mean_P
+
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = '1'

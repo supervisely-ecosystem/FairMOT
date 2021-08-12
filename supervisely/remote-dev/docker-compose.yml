@@ -1,13 +1,14 @@
+
 version: "2.2"
 services:
-  devssh:
-    shm_size: '2gb'
+  fairmot:
+    shm_size: '8gb'
     runtime: nvidia
     build:
       context: .
       args:
-        IMAGE: supervisely/base-pytorch:6.0.21
+        IMAGE: nvidia/cuda:11.1.1-devel-ubuntu18.04
     ports:
-      - "1111:22"
+      - "1234:22"
     volumes:
       - "./data:/data"
