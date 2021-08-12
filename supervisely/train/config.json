@@ -14,9 +14,8 @@
   "icon": "https://imgur.com/NanJ8gT.png",
   "icon_cover": true,
   "context_menu": {
-    "target": ["video_project"],
+    "target": ["videos_project"],
     "context_root": "Neural Networks",
     "context_category": "FairMOT"
-  },
-  "instance_version": "6.4.18"
+  }
 }
