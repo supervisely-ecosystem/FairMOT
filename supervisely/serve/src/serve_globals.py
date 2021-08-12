@@ -2,11 +2,15 @@ import os
 import sys
 import pathlib
 import supervisely_lib as sly
+from dotenv import load_dotenv  # pip install python-dotenv\
 
+load_dotenv("../debug.env")
+load_dotenv("../secret_debug.env", override=True)
 
 my_app = sly.AppService()
 api = my_app.public_api
 task_id = my_app.task_id
+
 
 sly.fs.clean_dir(my_app.data_dir)  # @TODO: for debug
 
@@ -21,6 +25,14 @@ sys.path.append(train_source_path)
 serve_source_path = os.path.join(root_source_path, "supervisely/serve/src")
 sly.logger.info(f"Serve source directory: {serve_source_path}")
 sys.path.append(serve_source_path)
+
+mot_source_path = os.path.join(root_source_path, "src")
+sly.logger.info(f"FairMOT source directory: {mot_source_path}")
+sys.path.append(mot_source_path)
+
+lib_source_path = os.path.join(root_source_path, "src/lib")
+sly.logger.info(f"LIB source directory: {lib_source_path}")
+sys.path.append(lib_source_path)
 
 team_id = int(os.environ['context.teamId'])
 workspace_id = int(os.environ['context.workspaceId'])

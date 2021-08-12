@@ -1,9 +1,11 @@
 
-#  TODO: add DCN compile 
 
+#ARG IMAGE
+#FROM $IMAGE
 
-ARG IMAGE
-FROM $IMAGE
+FROM nvidia/cuda:11.1.1-devel-ubuntu18.04
+# FROM nvidia/cuda:11.1.1-base-ubuntu18.04
+
 
 RUN apt-get update && apt-get install -y openssh-server
 EXPOSE 22
@@ -37,9 +39,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/* /var/log/dpkg.log
 
 
-RUN ls *
+RUN ls ./*
 
-RUN git clone -b develop https://github.com/supervisely-ecosystem/FairMOT 
+
+RUN git clone -b develop https://github.com/supervisely-ecosystem/FairMOT
 
 # RUN cd /FairMOT/ && git pull && git checkout develop && git pull
 # RUN mkdir /FairMOT/data && cd /FairMOT/data && wget https://motchallenge.net/data/MOT20.zip && unzip MOT20.zip
@@ -103,52 +106,33 @@ RUN pip install -U scikit-learn==0.24.2
 RUN conda --version
 
 RUN pip install torch==1.7.0+cu110 torchvision==0.8.1+cu110 torchaudio==0.7.0 -f https://download.pytorch.org/whl/torch_stable.html
-
-
-# ARG dataset_link=http://78.46.75.100:38585/h5un6l2bnaz1vj8a9qgms4-public/teams_storage/238/o/0/rh/OZbarBya9HwaR335PexrfEquxj7uJbrsyJzXHiCehP1ZeWSSJWmXTcyIBEsEPj4wQGIZFecxq0fgD3wcXcUdJm3SnYDvpxS4CaHe3vIvefTgsuMHQt6xVmqHBPyA.tar
-
-# ARG dataset_link=http://78.46.75.100:38585/h5un6l2bnaz1vj8a9qgms4-public/teams_storage/238/M/b/yb/vxFdkNkOia8s7Xo5VBDHaNl3k3ftFuQaGvyn2pVXvMfHw9B21qgWkejxDeFr6f1E42ZKjvJJfosiwRtfjeuf1BmdlLYxFcHW057DYVmxkOx7cQsNfzhvbCw8WNf2.tar
-
-# ARG dataset_link=http://78.46.75.100:38585/h5un6l2bnaz1vj8a9qgms4-public/teams_storage/238/9/6/bP/8MEm7TUdWWqyDAKwHl9gFoDzPh3yoTIAVdwnP2cSbTFBpUVAu1snDpQ3X05j9HsGI9fhIrK0reNTXgMLixS7wv0HdlSzcNuCK5rcDOc0aIYh1JLoz5u9nvRlPy7Q.tar
-
-# ARG dataset_link=http://78.46.75.100:38585/h5un6l2bnaz1vj8a9qgms4-public/teams_storage/238/X/O/PB/BYf09klvmpx470idDYasYhckPXAfIX5r2lTRPboHNsr9OxBnDwnEFofeVOkQLZmMP1t5Krjyra3RLkFCnaKzx5bPXTWnMVtTqbdIMCg7pFY0ipzAKPRB22vDOUyP.tar
-
-# ARG dataset_link=http://78.46.75.100:38585/h5un6l2bnaz1vj8a9qgms4-public/teams_storage/238/Z/D/kL/OurtZ5velR1ZKtB2KPJRaQEORf5k3gCb2qPj2VefAPvmXPpn8ImkTwahyM6TyBUCLytj80YoB0nud8RhjFDirykdTPfbDqeVxSQfPh5QYhBYAPq47Tbaf62hm68H.tar
-
-ARG dataset_link=http://78.46.75.100:38585/h5un6l2bnaz1vj8a9qgms4-public/teams_storage/238/C/g/AH/4RIlv2OcvxxLGZfl9MsXbw6ZQsQw3BkuQbftyeG1tyFVVl7wiesnWuBr2E7Ce2Mk9WJuSJfEYDpuK0b4ORgFJZbWc4noNAUcuyGYsbUpNDGCNVCIKyxebdGdzghC.tar
-
-RUN mkdir /FairMOT/data && cd /FairMOT/data &&  wget $dataset_link && tar -xvf *.tar && mv ds_* SLY_MOT
-RUN ls /FairMOT/data
-RUN rm -f -r /FairMOT/data/*.tar && cd /FairMOT/data/SLY_MOT/ && mkdir -p labels_with_ids/train && mkdir images && mkdir -p labels_with_ids/train && cp -r train images/test && mv train images
-
-ARG ls
-
 RUN cd /FairMOT/ && git pull
 
-RUN pip install -r /FairMOT/requirements.txt 
-# RUN python /FairMOT/src/rename_img_seq.py
-RUN python /FairMOT/src/gen_labels.py
-RUN cd /FairMOT/src/ && python ./gen_data_path.py
- 
+RUN pip install -r /FairMOT/requirements.txt
 
 
-RUN git clone -b pytorch_1.7 https://github.com/ifzhang/DCNv2.git
+RUN git clone -b pytorch_1.7 https://github.com/supervisely-ecosystem/DCNv2
 #ENV PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:${PATH}"
-#RUN nvidia-smi
+# RUN nvidia-smi
+
+
+#ENV PYTHONUNBUFFERED=1
+
 
 RUN ls /usr/local/
 RUN ls /usr/local/cuda
 
-#ENV PYTHONUNBUFFERED=1
+#ENV FORCE_CUDA="1"
 #ENV PATH="/usr/local/cuda-11.1/bin:${PATH}"
 #ENV LD_LIBRARY_PATH="/usr/local/cuda/lib64:${LD_LIBRARY_PATH}"
+#ENV CUDA_HOME=/usr/local/cuda-11.1
 
-#RUN cd DCNv2 && ./make.sh
+ENV TORCH_CUDA_ARCH_LIST="Pascal;Volta;Turing"
+
+RUN cd DCNv2 && ./make.sh
 # RUN cd DCNv2 && CUDA_VISIBLE_DEVICES=0 ./make.sh
 
-
-
-
+RUN pip install supervisely==6.1.94 python-dotenv==0.19.0
 
 # MORE SECURE: use a trusted RSA key
 ARG home=/root
@@ -162,4 +146,3 @@ COPY sshd_deamon.sh /sshd_deamon.sh
 RUN chmod 755 /sshd_deamon.sh
 CMD ["/sshd_deamon.sh"]
 ENTRYPOINT ["sh", "-c", "/sshd_deamon.sh"]
-

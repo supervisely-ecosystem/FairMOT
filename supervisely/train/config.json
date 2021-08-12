@@ -6,12 +6,12 @@
     "track"
   ],
   "description": "Dashboard to configure, start and monitor training",
-  "docker_image": "supervisely/base-py-sdk:6.1.84",
+  "docker_image": "supervisely/fairmot:1.0.0",
   "main_script": "supervisely/train/src/sly_train.py",
   "gui_template": "supervisely/train/src/gui.html",
   "task_location": "workspace_tasks",
   "need_gpu": true,
-  "icon": "https://i.imgur.com/wc2STfP.png",
+  "icon": "https://imgur.com/NanJ8gT.png",
   "icon_cover": true,
   "context_menu": {
     "target": ["video_project"],
