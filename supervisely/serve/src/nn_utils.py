@@ -91,7 +91,7 @@ def init_model():
 @sly.timeit
 def deploy_model():
     g.model = init_model()
-    sly.logger.info("Model has been successfully deployed")
+    sly.logger.info("🟩 Model has been successfully deployed")
 
 
 def download_video(video_id, frames_range=None):
