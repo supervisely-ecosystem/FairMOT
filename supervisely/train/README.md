@@ -36,7 +36,7 @@ Application key points:
 
 
 2. Add app from ecosystem to your team  
-<img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/tree/master/supervisely/train" src="https://imgur.com/Mk1gpGJ.png" width="350px" style='padding-bottom: 10px'/>
+<img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/supervisely/train" src="https://imgur.com/Mk1gpGJ.png" width="350px" style='padding-bottom: 10px'/>
 
 
 3. Run app from the context menu of **video project** with labeled objects:  
