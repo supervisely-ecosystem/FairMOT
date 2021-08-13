@@ -11,43 +11,42 @@
     <a href="#Screenshots">Screenshots</a>
 </p>
 
+[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](https://ecosystem.supervise.ly/apps/supervisely-ecosystem/synthetic-videos-for-tracking)
 [![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervise.ly/slack)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/supervisely-ecosystem/FairMOT)
-[![views](https://app.supervise.ly/public/api/v3/ecosystem.counters?repo=supervisely-ecosystem/FairMOT/supervisely/serve&counter=views&label=views)](https://supervise.ly)
-[![used by teams](https://app.supervise.ly/public/api/v3/ecosystem.counters?repo=supervisely-ecosystem/FairMOT/supervisely/serve&counter=downloads&label=used%20by%20teams)](https://supervise.ly)
-[![runs](https://app.supervise.ly/public/api/v3/ecosystem.counters?repo=supervisely-ecosystem/FairMOT/supervisely/serve&counter=runs&label=runs&123)](https://supervise.ly)
+[![views](https://app.supervise.ly/public/api/v3/ecosystem.counters?repo=supervisely-ecosystem/FairMOT/supervisely/visualize&counter=views&label=views)](https://supervise.ly)
+[![used by teams](https://app.supervise.ly/public/api/v3/ecosystem.counters?repo=supervisely-ecosystem/FairMOT/supervisely/visualize&counter=downloads&label=used%20by%20teams)](https://supervise.ly)
+[![runs](https://app.supervise.ly/public/api/v3/ecosystem.counters?repo=supervisely-ecosystem/FairMOT/supervisely/visualize&counter=runs&label=runs&123)](https://supervise.ly)
 
 </div>
 
 # Overview
 
-Serve FairMOT model as Supervisely APP.
+Visualize FairMOT checkpoints on Supervisely Video Project.
 
 Application key points:
-- Can be deployed on CPU or GPU
-- Can be used in Supervisely APPs
-- Available via REST API
+- Generating grid video preview
+- Output in Supervisely Project format
 
 
 
 # How to Use
 
-1. Train your model using [Train FairMOT APP](https://ecosystem.supervise.ly/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Ftrain).  
+1. Train your model using [Train FairMOT](https://ecosystem.supervise.ly/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Ftrain).  
 After the end of the train, you get a folder with checkpoints available in [Supervisely Files](https://app.supervise.ly/files/) by `/FairMOT/train/{experiment_name}/checkpoints` path.
 
 <img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/supervisely/train" src="https://imgur.com/Mk1gpGJ.png" width="350px" style='padding-bottom: 10px'/>
 
 
-2. Add [Serve FairMOT](https://ecosystem.supervise.ly/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Fserve) from ecosystem to your team  
+2. Add [Visualize FairMOT](https://ecosystem.supervise.ly/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Fvisualize) from ecosystem to your team  
 
-<img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/supervisely/serve" src="https://imgur.com/ksDJmF0.png" width="350px" style='padding-bottom: 10px'/>
+<img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/supervisely/visualize" src="https://imgur.com/Ni9d1DE.png" width="350px" style='padding-bottom: 10px'/>
 
-3. Open checkpoints dir `/FairMOT/train/{experiment_name}/checkpoints` in [Supervisely Files](https://app.supervise.ly/files/) and **Run Application**.  
-<img src="https://imgur.com/fKOoOvg.png" width="80%" style='padding-top: 10px'>  
+3. Run app from the context menu of **Video Project**:  
+<img src="https://imgur.com/08YUfgS.png" width="80%" style='padding-top: 10px'>  
 
-4. The model has been successfully deployed  
-<img src="https://imgur.com/1v8EYKR.png" width="80%" style='padding-top: 10px'>  
 
+4. Set the settings and start the visualization
 
 
 # Watch Demo Video
@@ -60,7 +59,3 @@ After the end of the train, you get a folder with checkpoints available in [Supe
 
 
 # Screenshots
-
-
-
-[Check this Python Example](https://github.com/supervisely-ecosystem/FairMOT/blob/master/supervisely/serve/src/demo_api_requests.py). It illustrates available methods of the deployed model. Now you can integrate network predictions to your python script. This is the way how other Supervisely Apps can communicate with NNs. And also you can use serving app as an example — how to use downloaded NN weights outside Supervisely.
