@@ -278,7 +278,7 @@ def train(api: sly.Api, task_id, context, state, app_logger):
 
     try:
         sly_dir_path = os.getcwd()
-        os.chdir('../../../src')
+        os.chdir(g.fair_mot_src)
 
         organize_data(state)
         init_script_arguments(state)
