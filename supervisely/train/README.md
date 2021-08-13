@@ -57,4 +57,4 @@ Application key points:
 
 
 # Screenshots
-<img src="https://imgur.com/ezKOLE3.png" width="auto" style='padding-top: 10px'>
+<img src="https://imgur.com/DX1Wym9.png" width="auto" style='padding-top: 10px'>
