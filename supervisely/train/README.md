@@ -30,7 +30,8 @@ Application key points:
 
 # How to Use
 
-1. Prepare a video project containing objects annotated with `Polygon`. You can use the [import MOT format APP](https://ecosystem.supervise.ly/apps/import-mot-format) to import your MOT format data into Supervisely.  
+1. Prepare a video project containing objects annotated with `Rectangle shapes`.  
+You can use the [import MOT format APP](https://ecosystem.supervise.ly/apps/import-mot-format) to import your MOT format data into Supervisely.  
 
 <img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/import-mot-format" src="https://imgur.com/gYUrNc2.png" width="350px" style='padding-bottom: 10px'/>
 
