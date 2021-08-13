@@ -1,7 +1,6 @@
 <div align="center" markdown>
 
-
-<img src=".png"/>  
+<img src="https://imgur.com/zeQq2nM.png"/>  
 
 # Train FairMOT
 
@@ -13,10 +12,10 @@
 </p>
 
 [![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervise.ly/slack)
-![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/supervisely-ecosystem/synthetic-videos-for-tracking)
-[![views](https://app.supervise.ly/public/api/v3/ecosystem.counters?repo=supervisely-ecosystem/synthetic-videos-for-tracking&counter=views&label=views)](https://supervise.ly)
-[![used by teams](https://app.supervise.ly/public/api/v3/ecosystem.counters?repo=supervisely-ecosystem/synthetic-videos-for-tracking&counter=downloads&label=used%20by%20teams)](https://supervise.ly)
-[![runs](https://app.supervise.ly/public/api/v3/ecosystem.counters?repo=supervisely-ecosystem/synthetic-videos-for-tracking&counter=runs&label=runs&123)](https://supervise.ly)
+![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/supervisely-ecosystem/FairMOT)
+[![views](https://app.supervise.ly/public/api/v3/ecosystem.counters?repo=supervisely-ecosystem/FairMOT&counter=views&label=views)](https://supervise.ly)
+[![used by teams](https://app.supervise.ly/public/api/v3/ecosystem.counters?repo=supervisely-ecosystem/FairMOT&counter=downloads&label=used%20by%20teams)](https://supervise.ly)
+[![runs](https://app.supervise.ly/public/api/v3/ecosystem.counters?repo=supervisely-ecosystem/FairMOT&counter=runs&label=runs&123)](https://supervise.ly)
 
 </div>
 
@@ -25,34 +24,36 @@
 Train FairMOT on your custom videos. Configure Train / Validation splits, model and training hyperparameters. Run on any agent (with GPU) in your team. Monitor progress, metrics, logs and other visualizations withing a single dashboard.
 
 Application key points:
-- Only one class tracking is available
+- Only **single class** tracking is available
+- Only **Rectangle shapes** are supported
 
 
 # How to Use
 
 1. Prepare a video project containing objects annotated with `Polygon`. You can use the [import MOT format APP](https://ecosystem.supervise.ly/apps/import-mot-format) to import your MOT format data into Supervisely.  
 
-<img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/import-mot-format" src=".png" width="350px" style='padding-bottom: 10px'/>
+<img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/import-mot-format" src="https://imgur.com/gYUrNc2.png" width="350px" style='padding-bottom: 10px'/>
 
 
 2. Add app from ecosystem to your team  
-<img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/tree/develop/supervisely/train" src="https://imgur.com/WIjIxA1.png" width="350px" style='padding-bottom: 10px'/>
+<img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/tree/master/supervisely/train" src="https://imgur.com/Mk1gpGJ.png" width="350px" style='padding-bottom: 10px'/>
 
 
+3. Run app from the context menu of **video project** with labeled objects:  
+<img src="https://imgur.com/o7ZJxpd.png" width="80%" style='padding-top: 10px'>  
 
-4. Run app from the context menu of project with labeled foregrounds:  
-<img src="https://imgur.com/68J2Z6t.png" width="80%" style='padding-top: 10px'>  
 
+4. Set the settings and start the train
 
-5. Generate synthetic videos with different settings and save experiments results to different projects / datasets.
-
-6. Close app manually
 
 
 # Watch Demo Video
+
+`in developing`
+<!--
 <a data-key="sly-embeded-video-link" href="https://youtu.be/yvWegId-edU" data-video-code="yvWegId-edU">
     <img src="https://imgur.com/VRQdPXx.png" alt="SLY_EMBEDED_VIDEO_LINK"  style="max-width:100%;">
-</a>
+</a> -->
 
 
 # Screenshots

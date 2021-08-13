@@ -27,6 +27,7 @@ from functools import partial  # SLY CODE
 
 
 def main(opt):
+    organize_progress = get_progress_cb("TrainInfo", f"Setting up FairMOT", 1)  # SLY CODEs
     torch.manual_seed(opt.seed)
     torch.backends.cudnn.benchmark = not opt.not_cuda_benchmark and not opt.test
 
@@ -80,6 +81,9 @@ def main(opt):
 
     sly_epoch_progress = get_progress_cb("Epoch", "Epoch", opt.num_epochs, min_report_percent=1)  # SLY CODE
 
+    organize_progress(1) # SLY CODE
+    reset_progress("TrainInfo") # SLY CODE
+
     for epoch in range(1, opt.num_epochs + 1):
 
         if sly_train_renderer.finish_training_in_advance() and epoch != 1:  # SLY CODE
@@ -131,6 +135,7 @@ def main(opt):
 
 
     reset_progress('Epoch')  # SLY CODE
+    reset_progress("Iter")  # SLY CODE
     logger.close()
 
 

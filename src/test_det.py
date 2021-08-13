@@ -222,7 +222,7 @@ def test_det(
 
     print('AP: %-.4f\n\n' % (AP_accum[0] / (AP_accum_count[0] + 1E-16)))
 
-    reset_progress("Iter")  # SLY CODE
+
 
     # Return mAP
     return mean_mAP, mean_R, mean_P

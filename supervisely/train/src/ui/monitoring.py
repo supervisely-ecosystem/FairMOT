@@ -250,7 +250,7 @@ def organize_in_mot_format(video_paths=None, is_train=True):
 
         organize_progress(1)
 
-    reset_progress("TrainInfo")
+
 
 
 @g.my_app.callback("setFinishTrainFlag")
