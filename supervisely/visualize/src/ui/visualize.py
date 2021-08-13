@@ -452,9 +452,9 @@ def generate_sly_project():
 @sly.timeit
 @g.my_app.ignore_errors_and_show_dialog_window()
 def visualize_videos(api: sly.Api, task_id, context, state, app_logger):
-    sly_dir_path = os.getcwd()
-    os.chdir('../../../src')
     try:
+        sly_dir_path = os.getcwd()
+        os.chdir(g.fair_mot_src)
 
         init_script_arguments(state)
 
