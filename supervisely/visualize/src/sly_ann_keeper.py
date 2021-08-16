@@ -52,7 +52,11 @@ class AnnotationKeeper:
             api.project.update_meta(self.project.id, self.meta.to_json())
         else:
             self.project = api.project.get_info_by_id(project_id)
-            self.meta = api.project.get_meta(self.project.id)
+            curr_meta = sly.ProjectMeta(obj_classes=sly.ObjClassCollection(self.get_unique_objects(self.sly_objects_list)))
+            remote_meta = sly.ProjectMeta.from_json(api.project.get_meta(self.project.id))
+
+            self.meta = remote_meta.merge(curr_meta)
+            api.project.update_meta(self.project.id, self.meta.to_json())
 
         if not ds_id:
             self.dataset = api.dataset.create(self.project.id, f'{ds_name}',
@@ -79,7 +83,9 @@ class AnnotationKeeper:
 
         file_info = api.video.upload_paths(self.dataset.id, [video_name], [video_path],
                                            item_progress=uploading_progress)
-        api.video.annotation.append(file_info[0].id, video_annotation)
+
+        if len(self.figures) > 0:
+            api.video.annotation.append(file_info[0].id, video_annotation)
 
     def get_unique_objects(self, obj_list):
         unique_objects = []

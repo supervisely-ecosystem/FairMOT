@@ -377,7 +377,9 @@ def get_model_class_info():
     with open(class_info_path, 'r') as class_info_file:
         class_data = json.load(class_info_file)
 
-    return class_data['name'], class_data['color']
+    h = class_data['color'].lstrip('#')
+    class_color = tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))  # in RGB
+    return class_data['name'], class_color
 
 
 def process_video(video_path, ann_path, project_id=None, dataset_id=None):
