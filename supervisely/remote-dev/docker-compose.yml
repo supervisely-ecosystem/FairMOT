@@ -1,7 +1,7 @@
 
 version: "2.2"
 services:
-  fairmot:
+  remote_dev_service:
     shm_size: '8gb'
     runtime: nvidia
     build:
