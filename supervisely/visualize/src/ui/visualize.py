@@ -52,6 +52,8 @@ def init(data, state):
     data["outputName"] = None
     data["outputUrl"] = None
 
+    sly.fs.clean_dir(g.grid_video_dir)
+    sly.fs.clean_dir(g.output_dir)
 
 def restart(data, state):
     data["done5"] = False
@@ -369,24 +371,26 @@ def add_figures_from_mot_to_sly(ann_path, ann_keeper, video_shape):
                                         frame_index=frame_index)
 
 
-def get_model_class_name():
+def get_model_class_info():
     class_info_path = os.path.join(g.local_info_dir, 'class_info.json')
 
     with open(class_info_path, 'r') as class_info_file:
         class_data = json.load(class_info_file)
 
-    return class_data['name']
+    return class_data['name'], class_data['color']
+
 
 def process_video(video_path, ann_path, project_id=None, dataset_id=None):
     exp_id = g.api.app.get_field(g.task_id, 'state.expId')
 
-    class_name = get_model_class_name()
+    class_name, class_color = get_model_class_info()
     objects_count = get_objects_count(ann_path)
     video_shape = get_video_shape(video_path)
 
     ann_keeper = sly_ann_keeper.AnnotationKeeper(video_shape=(video_shape[1], video_shape[0]),
                                                  objects_count=objects_count,
-                                                 class_name=class_name)
+                                                 class_name=class_name,
+                                                 color=class_color)
 
     add_figures_from_mot_to_sly(ann_path=ann_path,
                                 ann_keeper=ann_keeper,

@@ -7,11 +7,12 @@ from sly_visualize_progress import get_progress_cb, reset_progress, init_progres
 
 
 class AnnotationKeeper:
-    def __init__(self, video_shape, objects_count, class_name):
+    def __init__(self, video_shape, objects_count, class_name, color):
 
         self.video_shape = video_shape
         self.objects_count = objects_count
         self.class_name = class_name
+        self.color = color
 
         self.project = None
         self.dataset = None
@@ -44,8 +45,14 @@ class AnnotationKeeper:
         if not project_id:
             self.project = api.project.create(workspace_id, project_name, type=sly.ProjectType.VIDEOS,
                                               change_name_if_conflict=True)
+
+            self.meta = sly.ProjectMeta(
+                obj_classes=sly.ObjClassCollection(self.get_unique_objects(self.sly_objects_list)))
+
+            api.project.update_meta(self.project.id, self.meta.to_json())
         else:
             self.project = api.project.get_info_by_id(project_id)
+            self.meta = api.project.get_meta(self.project.id)
 
         if not ds_id:
             self.dataset = api.dataset.create(self.project.id, f'{ds_name}',
@@ -56,9 +63,6 @@ class AnnotationKeeper:
                     self.dataset = dataset
                     break
 
-        self.meta = sly.ProjectMeta(obj_classes=sly.ObjClassCollection(self.get_unique_objects(self.sly_objects_list)))
-
-        api.project.update_meta(self.project.id, self.meta.to_json())
 
     def upload_annotation(self, video_path):
         self.get_frames_list()
@@ -88,7 +92,7 @@ class AnnotationKeeper:
 
     def get_sly_objects(self):
         for obj in range(self.objects_count):
-            self.sly_objects_list.append(sly.ObjClass(self.class_name, sly.Rectangle))
+            self.sly_objects_list.append(sly.ObjClass(self.class_name, sly.Rectangle, self.color))
 
     def get_video_objects_list(self):
         for sly_object in self.sly_objects_list:
