@@ -51,14 +51,11 @@ After the end of the train, you get a folder with checkpoints available in [Supe
 
 # Watch Demo Video
 
-`in developing`
-<!--
-<a data-key="sly-embeded-video-link" href="https://youtu.be/yvWegId-edU" data-video-code="yvWegId-edU">
-    <img src="https://imgur.com/VRQdPXx.png" alt="SLY_EMBEDED_VIDEO_LINK"  style="max-width:100%;">
-</a> -->
+<a data-key="sly-embeded-video-link" href="https://youtu.be/xVskN0w52qY" data-video-code="xVskN0w52qY">
+    <img src="https://imgur.com/OHB46Qd.png" alt="SLY_EMBEDED_VIDEO_LINK"  style="max-width:100%;">
+</a>
 
 
 # Screenshots
 
 <img src="https://imgur.com/C9qX691.png" width="auto" style='padding-top: 10px'>
-

@@ -50,11 +50,9 @@ You can use the [import MOT format APP](https://ecosystem.supervise.ly/apps/impo
 
 # Watch Demo Video
 
-`in developing`
-<!--
-<a data-key="sly-embeded-video-link" href="https://youtu.be/yvWegId-edU" data-video-code="yvWegId-edU">
-    <img src="https://imgur.com/VRQdPXx.png" alt="SLY_EMBEDED_VIDEO_LINK"  style="max-width:100%;">
-</a> -->
+<a data-key="sly-embeded-video-link" href="https://youtu.be/efkud_2HfP0" data-video-code="efkud_2HfP0">
+    <img src="https://imgur.com/hmNHqtW.png" alt="SLY_EMBEDED_VIDEO_LINK"  style="max-width:100%;">
+</a>
 
 
 # Screenshots
