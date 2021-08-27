@@ -104,8 +104,11 @@ def download_frames_interval(video_id, frames_indexes):
         img_bgr = get_frame_np(g.api, video_id, frame_index)
         cv2.imwrite(f"{output_path}/frame{index:06d}.jpg", img_bgr)  # save frame as JPEG file
 
+    video_info = g.api.video.get_info_by_id(video_id)
+    video_fps = round(1 / video_info.frames_to_timecodes[1])
+
     video_data = {'id': video_id, 'path': output_path,
-                  'fps': None, 'origin_path': None}
+                  'fps': video_fps, 'origin_path': None}
 
     return video_data
 
@@ -253,7 +256,7 @@ def add_figures_from_mot_to_sly(ann_path, ann_keeper, video_shape):
 
         ann_keeper.add_figures_by_frame(coords_data=coords_data,
                                         objects_indexes=objects_indexes,
-                                        frame_index=curr_frame_index)
+                                        frame_index=int(curr_frame_index))
 
 
 def convert_annotations_to_mot(images_seq_path, ann_path, video_id):

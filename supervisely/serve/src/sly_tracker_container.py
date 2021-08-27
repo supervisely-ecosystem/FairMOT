@@ -29,7 +29,8 @@ class TrainedTrackerContainer:
 
         self.add_frames_indexes()
 
-        self.progress_notify_interval = 5
+        self.progress_notify_interval = round(len(self.frames_indexes) / 0.2)
+
         self.video_annotator_progress = partial(g.api.video.notify_progress,
                                                 track_id=self.track_id,
                                                 video_id=self.video_id,

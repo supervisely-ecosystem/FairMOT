@@ -65,7 +65,7 @@ def get_session_info(api: sly.Api, task_id, context, state, app_logger):
 
 @g.my_app.callback("inference_video_id")  # to video, input_video_id[frame_range] -> output_annotation_for_video
 @sly.timeit
-@send_error_data
+# @send_error_data
 def inference_video_id(api: sly.Api, task_id, context, state, app_logger):
     app_logger.debug("Input data", extra={"state": state})
     video_id = state["videoId"]
@@ -73,7 +73,7 @@ def inference_video_id(api: sly.Api, task_id, context, state, app_logger):
     frames_indexes = None
     frames_range = state.get("framesRange", None)
     if frames_range is not None:
-        frames_indexes = [index for index in range(frames_range[0], frames_range[1], 1)]
+        frames_indexes = [index for index in range(frames_range[0], frames_range[1] + 1, 1)]
 
     conf_thres = state.get("confThres", 0)
     is_preview = state.get("isPreview", False)
