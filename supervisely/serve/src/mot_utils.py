@@ -17,6 +17,7 @@ def init_script_arguments():
     # sys.argv.extend([f'--conf_thres', '0'])
     sys.argv.extend([f'--output_format', ' text'])
 
+
 def check_rotation(path_video_file):
     # this returns meta-data of the video file in form of a dictionary
     meta_dict = ffmpeg.probe(path_video_file)
@@ -42,10 +43,9 @@ def correct_rotation(frame, rotateCode):
     return cv2.rotate(frame, rotateCode)
 
 
-def videos_to_frames(video_path, frames_range=None):
+def videos_to_frames(video_path):
     video_name = (video_path.split('/')[-1]).split('.mp4')[0]
     output_path = os.path.join(g.input_converted, f'{video_name}')
-
     os.makedirs(output_path, exist_ok=True)
 
     vidcap = cv2.VideoCapture(video_path)
@@ -54,21 +54,15 @@ def videos_to_frames(video_path, frames_range=None):
     rotateCode = check_rotation(video_path)
 
     while success:
-        if frames_range:
-            if frames_range[0] <= count <= frames_range[1]:
-                if rotateCode is not None:
-                    image = correct_rotation(image, rotateCode)
-                cv2.imwrite(f"{output_path}/frame{count:06d}.jpg", image)  # save frame as JPEG file
-        else:
-            if rotateCode is not None:
-                image = correct_rotation(image, rotateCode)
-            cv2.imwrite(f"{output_path}/frame{count:06d}.jpg", image)  # save frame as JPEG file
+        if rotateCode is not None:
+            image = correct_rotation(image, rotateCode)
+        cv2.imwrite(f"{output_path}/frame{count:06d}.jpg", image)  # save frame as JPEG file
 
         success, image = vidcap.read()
         count += 1
 
     fps = vidcap.get(cv2.CAP_PROP_FPS)
 
-    g.video_data = {'index': 0, 'path': output_path,
-                    'fps': fps, 'origin_path': video_path}
-    return 0
+    video_data = {'id': video_name, 'path': output_path,
+                  'fps': fps, 'origin_path': video_path}
+    return video_data

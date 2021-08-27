@@ -94,36 +94,67 @@ def deploy_model():
     sly.logger.info("🟩 Model has been successfully deployed")
 
 
-def download_video(video_id, frames_range=None):
-    sly.fs.clean_dir(g.input_raw)
-    sly.fs.clean_dir(g.input_converted)
+def download_frames_interval(video_id, frames_indexes):
+    output_path = os.path.join(g.input_converted, f'{video_id}')
 
-    video_info = g.api.video.get_info_by_id(video_id)
-    save_path = os.path.join(g.input_raw, video_info.name)
+    os.makedirs(output_path, exist_ok=True)
+    sly.fs.clean_dir(output_path)
 
-    g.api.video.download_path(video_id, save_path)
+    for index, frame_index in enumerate(frames_indexes):
+        img_bgr = get_frame_np(g.api, video_id, frame_index)
+        cv2.imwrite(f"{output_path}/frame{index:06d}.jpg", img_bgr)  # save frame as JPEG file
 
-    mot_utils.videos_to_frames(save_path, frames_range)
-    return save_path
+    video_data = {'id': video_id, 'path': output_path,
+                  'fps': None, 'origin_path': None}
 
-
-def get_model_class_name():
-    class_info_path = os.path.join(g.local_info_dir, 'class_info.json')
-
-    with open(class_info_path, 'r') as class_info_file:
-        class_data = json.load(class_info_file)
-
-    return class_data['name']
+    return video_data
 
 
-def process_video(video_id, frames_range, conf_thres, is_preview=False):
-    sly.fs.clean_dir(g.input_raw)  # cleaning dirs before processing
-    sly.fs.clean_dir(g.input_converted)
+def download_video(video_id, frames_indexes=None):
+    save_path = os.path.join(g.input_raw, f'{video_id}.mp4')
+
+    if frames_indexes is None:
+        if not os.path.isfile(save_path):
+            g.api.video.download_path(video_id, save_path)
+        video_data = mot_utils.videos_to_frames(save_path)
+    else:
+        video_data = download_frames_interval(video_id, frames_indexes)
+
+    return video_data
+
+
+def get_model_class_name(ann_path=None):
+    if ann_path is not None:
+        return ann_path.split('/')[-1].split('.')[0].split('_')[-1]
+
+    else:
+        class_info_path = os.path.join(g.local_info_dir, 'class_info.json')
+
+        with open(class_info_path, 'r') as class_info_file:
+            class_data = json.load(class_info_file)
+
+        return class_data['name']
+
+
+
+
+def process_video(video_id, frames_indexes, conf_thres, is_preview=False,
+                  trained_tracker_container=None):
+    sly.fs.clean_dir(g.input_converted)  # cleaning dirs before processing
     sly.fs.clean_dir(g.output_mot)
 
-    video_path = download_video(video_id, frames_range)
-    ann_path, preview_video_path = inference_model(is_preview, conf_thres)
-    annotations = convert_annotations_to_mot(video_path, ann_path, frames_range, video_id)
+    video_data = download_video(video_id, frames_indexes)
+
+    if trained_tracker_container is not None:
+        video_data['fps'] = trained_tracker_container.video_fps
+
+    ann_path, preview_video_path = inference_model(is_preview=is_preview,
+                                                   conf_thres=conf_thres,
+                                                   frames_indexes=frames_indexes,
+                                                   video_data=video_data,
+                                                   trained_tracker_container=trained_tracker_container)
+
+    annotations = convert_annotations_to_mot(video_data['path'], ann_path, video_id)
     return annotations, preview_video_path
 
 
@@ -135,8 +166,6 @@ def upload_video_to_sly(local_video_path):
     file_info = g.api.file.upload(g.team_id, local_video_path, remote_video_path)
 
     return file_info
-
-
 
 def get_objects_count(ann_path):
     objects_ids = []
@@ -168,13 +197,10 @@ def get_objects_ids_to_indexes_mapping(ann_path):
 
 
 def get_video_shape(video_path):
-    vcap = cv2.VideoCapture(video_path)
-    height = width = 0
-    if vcap.isOpened():
-        width = vcap.get(3)  # float `width`
-        height = vcap.get(4)
+    zero_image_name = os.listdir(video_path)[0]
+    image_shape = cv2.imread(os.path.join(video_path, zero_image_name)).shape
 
-    return tuple([int(width), int(height)])
+    return tuple([int(image_shape[1]), int(image_shape[0])])
 
 
 def get_coords_by_row(row_data, video_shape):
@@ -198,57 +224,42 @@ def get_coords_by_row(row_data, video_shape):
         return sly.Rectangle(top, left, bottom, right)
 
 
-def add_figures_from_mot_to_sly(ann_path, ann_keeper, video_shape, frames_range=None):
+def add_figures_from_mot_to_sly(ann_path, ann_keeper, video_shape):
     ids_to_indexes_mapping = get_objects_ids_to_indexes_mapping(ann_path)
 
     with open(ann_path, 'r') as ann_file:
         ann_rows = ann_file.read().split()
 
-    coords_on_frame = []
-    objects_indexes_on_frame = []
-    frame_index = None
+    keep_reading = True if len(ann_rows) > 0 else False
+    current_row = 0
 
-    if frames_range:
-        frames_div = frames_range[0]
-    else:
-        frames_div = 0
+    while keep_reading:
+        coords_data = []
+        objects_indexes = []
 
-    for ann_row in ann_rows:  # for each row in annotation
-        row_data = ann_row.split(',')
-        curr_frame_index = int(row_data[0]) - 1 + frames_div
-        if frame_index is None:  # init first frame index
-            frame_index = curr_frame_index
+        curr_frame_index = ann_rows[current_row].split(',')[0]
+        while curr_frame_index == ann_rows[current_row].split(',')[0]:
+            row_data = ann_rows[current_row].split(',')
 
-        if frame_index == curr_frame_index:  # if current frame equal previous
             object_coords = get_coords_by_row(row_data, video_shape=video_shape)
             if object_coords:
-                coords_on_frame.append(object_coords)
-                objects_indexes_on_frame.append(ids_to_indexes_mapping[row_data[1]])
+                coords_data.append(object_coords)
+                objects_indexes.append(ids_to_indexes_mapping[row_data[1]])
 
-        else:  # if frame has changed
-            ann_keeper.add_figures_by_frame(coords_data=coords_on_frame,
-                                            objects_indexes=objects_indexes_on_frame,
-                                            frame_index=frame_index)
+            current_row += 1
+            if current_row == len(ann_rows):
+                keep_reading = False
+                break
 
-            coords_on_frame = []
-            objects_indexes_on_frame = []
-
-            frame_index = curr_frame_index
-            object_coords = get_coords_by_row(row_data, video_shape=video_shape)
-            if object_coords:
-                coords_on_frame.append(object_coords)
-                objects_indexes_on_frame.append(ids_to_indexes_mapping[row_data[1]])
-
-    if frame_index:  # uploading latest annotations
-        ann_keeper.add_figures_by_frame(coords_data=coords_on_frame,
-                                        objects_indexes=objects_indexes_on_frame,
-                                        frame_index=frame_index)
+        ann_keeper.add_figures_by_frame(coords_data=coords_data,
+                                        objects_indexes=objects_indexes,
+                                        frame_index=curr_frame_index)
 
 
-def convert_annotations_to_mot(video_path, ann_path, frames_range, video_id):
-    class_name = get_model_class_name()
+def convert_annotations_to_mot(images_seq_path, ann_path, video_id):
+    class_name = get_model_class_name(ann_path)
     objects_count = get_objects_count(ann_path)
-    video_shape = get_video_shape(video_path)
+    video_shape = get_video_shape(images_seq_path)
     video_frames_count = g.api.video.get_info_by_id(video_id).frames_count
 
     ann_keeper = serve_ann_keeper.AnnotationKeeper(video_shape=(video_shape[1], video_shape[0]),
@@ -258,8 +269,7 @@ def convert_annotations_to_mot(video_path, ann_path, frames_range, video_id):
 
     add_figures_from_mot_to_sly(ann_path=ann_path,
                                 ann_keeper=ann_keeper,
-                                video_shape=video_shape,
-                                frames_range=frames_range)
+                                video_shape=video_shape)
 
     return ann_keeper.get_annotation()
 
@@ -277,9 +287,7 @@ def generate_video_from_frames():
     return output_video_path
 
 
-def inference_model(is_preview=False, conf_thres=0):
-    mot_utils.init_script_arguments()
-
+def init_options(conf_thres):
     opt = opts().init()
     model_data = get_model_data()
     model_epoch, model_arch, model_heads, model_head_conv = model_data['epoch'], \
@@ -294,28 +302,62 @@ def inference_model(is_preview=False, conf_thres=0):
 
     opt.load_model = os.path.join(g.local_weights_path)
 
+    return opt
+
+
+def inference_model(is_preview=False, conf_thres=0, video_data=None,
+                    trained_tracker_container=None, frames_indexes=None,):
+    mot_utils.init_script_arguments()
+    opt = init_options(conf_thres)
     data_type = 'mot'
-
-    video_path = g.video_data['path']
-    frame_rate = g.video_data['fps']
-    video_index = g.video_data['index']
-
-    dataloader = datasets.LoadImages(video_path, opt.img_size)
-
-    annotations_path = os.path.join(g.output_mot, f'{video_index}.txt')
-    os.makedirs(g.output_mot, exist_ok=True)
 
     frames_save_dir = None
     preview_video_path = None
+
+    class_name = trained_tracker_container.class_name if \
+        trained_tracker_container is not None else get_model_class_name()
+
+    video_path, frame_rate, video_id = video_data['path'], video_data['fps'], video_data['id']
+    annotations_path = os.path.join(g.output_mot, f'{video_id}_{class_name}.txt')
+    os.makedirs(g.output_mot, exist_ok=True)
+    dataloader = datasets.LoadImages(video_path, opt.img_size)
 
     if is_preview:
         frames_save_dir = g.output_mot
 
     eval_seq(opt, dataloader, data_type, annotations_path,
-             save_dir=frames_save_dir, show_image=False, frame_rate=frame_rate,
-             epoch=model_epoch)
+             save_dir=frames_save_dir, frame_rate=frame_rate,
+             frames_indexes=frames_indexes,
+             trained_tracker_container=trained_tracker_container)
 
     if is_preview:
         preview_video_path = generate_video_from_frames()
 
     return annotations_path, preview_video_path
+
+
+def get_frame_np(api, video_id, frame_index):
+    img_rgb = api.video.frame.download_np(video_id, frame_index)
+    img_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
+    return img_bgr
+
+
+def validate_figure(img_height, img_width, figure):
+    img_size = (img_height, img_width)
+    # check figure is within image bounds
+    canvas_rect = sly.Rectangle.from_size(img_size)
+    if canvas_rect.contains(figure.to_bbox()) is False:
+        # crop figure
+        figures_after_crop = [cropped_figure for cropped_figure in figure.crop(canvas_rect)]
+        if len(figures_after_crop) != 1:
+            g.logger.warn("len(figures_after_crop) != 1")
+        return figures_after_crop[0]
+    else:
+        return figure
+
+
+def calculate_nofity_step(frames_forward):
+    if frames_forward > 40:
+        return 10
+    else:
+        return 5

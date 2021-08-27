@@ -13,6 +13,8 @@ from tracking_utils.timer import Timer
 
 from tracking_utils.utils import mkdir_if_missing
 
+import serve_globals as g
+
 
 def write_results(filename, results, data_type):
     if data_type == 'mot':
@@ -79,27 +81,28 @@ def add_stats_to_image(image, opt):
 
     return image
 
-def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_image=True, frame_rate=30, use_cuda=True,
-             epoch=0):
+
+def eval_seq(opt, dataloader, data_type, result_filename,
+             save_dir=None, frame_rate=30, trained_tracker_container=None,
+             frames_indexes=None):
     if save_dir:
         mkdir_if_missing(save_dir)
+
     tracker = JDETracker(opt, frame_rate=frame_rate)
     timer = Timer()
     results = []
     frame_id = 0
-    # for path, img, img0 in dataloader:
-    for i, (path, img, img0) in enumerate(dataloader):
-        # if i % 8 != 0:
-        # continue
-        if frame_id % 20 == 0:
-            logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
 
+    for i, (path, img, img0) in enumerate(dataloader):
+        if frame_id % 20 == 0:
+            g.logger.info('Processing frame {} ({:.2f} fps)'.format(frame_id, 1. / max(1e-5, timer.average_time)))
         # run tracking
         timer.tic()
-        if use_cuda:
-            blob = torch.from_numpy(img).cuda().unsqueeze(0)
+        if g.device != 'cpu':
+            blob = torch.from_numpy(img).to(g.device).unsqueeze(0)
         else:
             blob = torch.from_numpy(img).unsqueeze(0)
+
         online_targets = tracker.update(blob, img0)
         online_tlwhs = []
         online_ids = []
@@ -107,27 +110,35 @@ def eval_seq(opt, dataloader, data_type, result_filename, save_dir=None, show_im
         for t in online_targets:
             tlwh = t.tlwh
             tid = t.track_id
-            # vertical = tlwh[2] / tlwh[3] > 1.6
-            # if tlwh[2] * tlwh[3] > opt.min_box_area and not vertical:
+
             if tlwh[2] * tlwh[3] > opt.min_box_area:
                 online_tlwhs.append(tlwh)
                 online_ids.append(tid)
-                # online_scores.append(t.score)
+
+
+
         timer.toc()
         # save results
-        results.append((frame_id + 1, online_tlwhs, online_ids))
-        # results.append((frame_id + 1, online_tlwhs, online_ids, online_scores))
-        if show_image or save_dir is not None:
+        if frames_indexes is not None:
+            results.append((frames_indexes[frame_id], online_tlwhs, online_ids))
+        else:
+            results.append((frame_id, online_tlwhs, online_ids))
+
+        if save_dir is not None:
             online_im = vis.plot_tracking(img0, online_tlwhs, online_ids, frame_id=frame_id,
                                           fps=1. / timer.average_time)
             online_im = add_stats_to_image(online_im, opt)
-
-        if show_image:
-            cv2.imshow('online_im', online_im)
-        if save_dir is not None:
             cv2.imwrite(os.path.join(save_dir, '{:05d}.jpg'.format(frame_id)), online_im)
+
         frame_id += 1
+
+        if trained_tracker_container is not None:
+            rc = trained_tracker_container.update_progress(enumerate_frame_index=i)
+            if rc == -2:
+                break
+
     # save results
     write_results(result_filename, results, data_type)
-    # write_results_score(result_filename, results, data_type)
+
     return frame_id, timer.average_time, timer.calls
+

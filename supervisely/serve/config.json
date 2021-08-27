@@ -19,7 +19,8 @@
   "need_gpu": true,
   "headless": true,
   "session_tags": [
-    "deployed_nn"
+    "deployed_nn",
+    "sly_video_tracking"
   ],
   "context_menu": {
     "target": ["files_file"]

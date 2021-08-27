@@ -11,6 +11,7 @@ my_app = sly.AppService()
 api = my_app.public_api
 task_id = my_app.task_id
 
+logger = sly.logger
 
 sly.fs.clean_dir(my_app.data_dir)  # @TODO: for debug
 
@@ -49,6 +50,7 @@ sly.fs.mkdir(local_info_dir)
 
 input_raw = os.path.join(serve_mot_dir, "input_raw")
 sly.fs.mkdir(input_raw)
+sly.fs.clean_dir(input_raw)
 
 input_converted = os.path.join(serve_mot_dir, "input_converted")
 sly.fs.mkdir(input_converted)

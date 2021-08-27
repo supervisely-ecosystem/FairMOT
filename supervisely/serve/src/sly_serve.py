@@ -6,6 +6,8 @@ import serve_globals as g
 import nn_utils
 import supervisely_lib as sly
 
+from sly_tracker_container import TrainedTrackerContainer
+
 
 @lru_cache(maxsize=10)
 def get_image_by_id(image_id):
@@ -67,13 +69,18 @@ def get_session_info(api: sly.Api, task_id, context, state, app_logger):
 def inference_video_id(api: sly.Api, task_id, context, state, app_logger):
     app_logger.debug("Input data", extra={"state": state})
     video_id = state["videoId"]
+
+    frames_indexes = None
     frames_range = state.get("framesRange", None)
+    if frames_range is not None:
+        frames_indexes = [index for index in range(frames_range[0], frames_range[1], 1)]
+
     conf_thres = state.get("confThres", 0)
     is_preview = state.get("isPreview", False)
 
     preview_video_url = None
 
-    annotations, preview_video_path = nn_utils.process_video(video_id, frames_range, conf_thres, is_preview)
+    annotations, preview_video_path = nn_utils.process_video(video_id, frames_indexes, conf_thres, is_preview)
     if is_preview:
         file_info = nn_utils.upload_video_to_sly(preview_video_path)
         preview_video_url = file_info.full_storage_url
@@ -87,6 +94,21 @@ def inference_video_id(api: sly.Api, task_id, context, state, app_logger):
 @send_error_data
 def inference_batch_ids(api: sly.Api, task_id, context, state, app_logger):
     raise NotImplementedError("Please contact tech support")
+
+
+@g.my_app.callback("track")
+@sly.timeit
+# @send_error_data
+def track_in_video_annotation_tool(api: sly.Api, task_id, context, state, app_logger):
+    tracker_container = TrainedTrackerContainer(context)
+
+    annotations, _ = nn_utils.process_video(video_id=tracker_container.video_id,
+                                            frames_indexes=tracker_container.frames_indexes,
+                                            conf_thres=0.4,
+                                            trained_tracker_container=tracker_container)
+
+    g.api.video.annotation.append(tracker_container.video_id, annotations)
+    tracker_container.update_progress(len(tracker_container.frames_indexes) - 1)
 
 
 def main():
