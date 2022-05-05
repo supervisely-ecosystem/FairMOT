@@ -22,6 +22,9 @@
     "deployed_nn"
   ],
   "context_menu": {
-    "target": ["files_file"]
-  }
+    "target": [
+      "files_file"
+    ]
+  },
+  "poster": "https://imgur.com/GbTR1UA.png"
 }
