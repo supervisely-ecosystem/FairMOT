@@ -487,7 +487,7 @@ def visualize_videos(api: sly.Api, task_id, context, state, app_logger):
 
         # show result directory in UI
         fields = [
-            {"field": "data.gridPreview", "payload": grid_file_info.full_storage_url},
+            {"field": "data.gridPreview", "payload": grid_file_info.storage_path},
             {"field": "data.outputUrl", "payload": g.api.file.get_url(file_info.id)},
             {"field": "data.outputName", "payload": remote_dir},
             {"field": "state.done5", "payload": True},
