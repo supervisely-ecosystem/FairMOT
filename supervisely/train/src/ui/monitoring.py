@@ -15,7 +15,7 @@ from gen_labels import gen_labels
 
 import shutil
 
-from supervisely_lib.app.widgets import CompareGallery
+from supervisely.app.v1.widgets.compare_gallery import CompareGallery
 import sly_train_renderer
 
 import glob
