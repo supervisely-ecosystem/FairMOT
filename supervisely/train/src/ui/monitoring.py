@@ -1,6 +1,6 @@
 import json
 import os
-import supervisely_lib as sly
+import supervisely as sly
 from sly_train_progress import get_progress_cb, reset_progress, init_progress
 import sly_globals as g
 
@@ -15,7 +15,7 @@ from gen_labels import gen_labels
 
 import shutil
 
-from supervisely_lib.app.widgets import CompareGallery
+from supervisely.app.v1.widgets.compare_gallery import CompareGallery
 import sly_train_renderer
 
 import glob

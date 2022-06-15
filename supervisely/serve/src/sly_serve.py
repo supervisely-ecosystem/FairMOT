@@ -4,7 +4,7 @@ from functools import lru_cache
 
 import serve_globals as g
 import nn_utils
-import supervisely_lib as sly
+import supervisely as sly
 
 
 @lru_cache(maxsize=10)
@@ -76,7 +76,7 @@ def inference_video_id(api: sly.Api, task_id, context, state, app_logger):
     annotations, preview_video_path = nn_utils.process_video(video_id, frames_range, conf_thres, is_preview)
     if is_preview:
         file_info = nn_utils.upload_video_to_sly(preview_video_path)
-        preview_video_url = file_info.full_storage_url
+        preview_video_url = file_info.storage_path
 
     request_id = context["request_id"]
     g.my_app.send_response(request_id, data={'ann': annotations.to_json(), 'preview_url': preview_video_url})

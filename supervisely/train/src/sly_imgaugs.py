@@ -1,5 +1,5 @@
 # from mmcls.datasets.builder import PIPELINES
-import supervisely_lib as sly
+import supervisely as sly
 
 
 # @PIPELINES.register_module()

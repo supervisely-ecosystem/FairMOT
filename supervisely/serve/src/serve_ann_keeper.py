@@ -1,6 +1,6 @@
 from serve_globals import *
 
-# from supervisely_lib.video_annotation.key_id_map import KeyIdMap
+# from supervisely.video_annotation.key_id_map import KeyIdMap
 
 from functools import partial
 

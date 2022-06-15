@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import sys
-import supervisely_lib as sly
+import supervisely as sly
 import pickle
 
 from dotenv import load_dotenv  # pip install python-dotenv\

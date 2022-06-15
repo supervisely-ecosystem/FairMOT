@@ -1,6 +1,6 @@
 import os
 
-import supervisely_lib as sly
+import supervisely as sly
 import sly_globals as g
 from sly_visualize_progress import get_progress_cb, reset_progress, init_progress
 

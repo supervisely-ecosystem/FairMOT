@@ -1,13 +1,13 @@
-import supervisely_lib as sly
+import supervisely as sly
 import sly_globals as g
 
 import os
 
 from sly_train_progress import get_progress_cb, reset_progress, init_progress
 
-from supervisely_lib.io.fs import mkdir, get_file_name
+from supervisely.io.fs import mkdir, get_file_name
 
-from supervisely_lib.geometry.rectangle import Rectangle
+from supervisely.geometry.rectangle import Rectangle
 
 import cv2
 from glob import glob
