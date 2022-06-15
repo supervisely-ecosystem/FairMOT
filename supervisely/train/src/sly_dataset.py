@@ -1,7 +1,7 @@
 import os
 import copy
 import numpy as np
-import supervisely_lib as sly
+import supervisely as sly
 
 from mmcls.datasets.base_dataset import BaseDataset
 from mmcls.datasets.builder import DATASETS

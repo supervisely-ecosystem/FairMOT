@@ -4,7 +4,7 @@ from functools import lru_cache
 
 import serve_globals as g
 import nn_utils
-import supervisely_lib as sly
+import supervisely as sly
 
 
 @lru_cache(maxsize=10)
