@@ -10,7 +10,8 @@
   "main_script": "supervisely/visualize/src/sly_visualize.py",
   "gui_template": "supervisely/visualize/src/gui.html",
   "task_location": "workspace_tasks",
-  "need_gpu": true,
+  "need_gpu": false,
+  "gpu": "preferred",
   "icon": "https://imgur.com/F9guNtO.png",
   "icon_cover": true,
   "context_menu": {
