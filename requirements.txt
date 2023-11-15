@@ -1,5 +1,5 @@
-supervisely==6.35.0
-supervisely[apps]==6.35.0
+# supervisely==6.35.0
+supervisely[apps]==6.72.189
 yacs
 opencv-python
 PyYAML
