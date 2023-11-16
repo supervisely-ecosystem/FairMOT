@@ -5,7 +5,7 @@ import sly_globals as g
 
 def init(data, state):
     # system
-    state["expId"] = 'output_exp_name'
+    state["expId"] = str(g.task_id)
     state["gpus"] = '0'
     state["numWorkers"] = 2
 
