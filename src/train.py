@@ -18,6 +18,7 @@ from datasets.dataset_factory import get_dataset
 from trains.train_factory import train_factory
 from test_det import test_det
 
+from supervisely.app import get_synced_data_dir
 from sly_train_progress import get_progress_cb, reset_progress, init_progress  # SLY CODE
 import sly_train_renderer  # SLY CODE
 from functools import partial  # SLY CODE
@@ -27,6 +28,13 @@ from functools import partial  # SLY CODE
 
 
 def main(opt):
+
+    opt.root_dir = get_synced_data_dir()
+    opt.exp_dir = os.path.join(opt.root_dir, 'experiment_files')
+    opt.save_dir = os.path.join(opt.exp_dir, 'checkpoints')
+    opt.debug_dir = os.path.join(opt.exp_dir, 'debug')
+    print('The output will be saved to ', opt.save_dir)
+
     organize_progress = get_progress_cb("TrainInfo", f"Setting up FairMOT", 1)  # SLY CODEs
     torch.manual_seed(opt.seed)
     torch.backends.cudnn.benchmark = not opt.not_cuda_benchmark and not opt.test
