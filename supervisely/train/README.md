@@ -11,10 +11,10 @@
     <a href="#Screenshots">Screenshots</a>
 </p>
 
-[![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervise.ly/slack)
+[![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervisely.com/slack)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/supervisely-ecosystem/FairMOT)
-[![views](https://app.supervise.ly/img/badges/views/supervisely-ecosystem/fairmot/supervisely/train.png)](https://supervise.ly)
-[![runs](https://app.supervise.ly/img/badges/runs/supervisely-ecosystem/fairmot/supervisely/train.png)](https://supervise.ly)
+[![views](https://app.supervisely.com/img/badges/views/supervisely-ecosystem/fairmot/supervisely/train.png)](https://supervisely.com)
+[![runs](https://app.supervisely.com/img/badges/runs/supervisely-ecosystem/fairmot/supervisely/train.png)](https://supervisely.com)
 
 </div>
 
@@ -30,7 +30,7 @@ Application key points:
 # How to Use
 
 1. Prepare a video project containing objects annotated with `Rectangle shapes`.  
-You can use the [import MOT format APP](https://ecosystem.supervise.ly/apps/import-mot-format) to import your [MOT format data](https://motchallenge.net/instructions/) into Supervisely.  
+You can use the [import MOT format APP](https://ecosystem.supervisely.com/apps/import-mot-format) to import your [MOT format data](https://motchallenge.net/instructions/) into Supervisely.  
 
 <img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/import-mot-format" src="https://imgur.com/gYUrNc2.png" width="350px" style='padding-bottom: 10px'/>
 
