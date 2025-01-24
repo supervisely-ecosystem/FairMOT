@@ -11,11 +11,11 @@
     <a href="#Screenshots">Screenshots</a>
 </p>
 
-[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](https://ecosystem.supervise.ly/apps/supervisely-ecosystem/synthetic-videos-for-tracking)
-[![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervise.ly/slack)
+[![](https://img.shields.io/badge/supervisely-ecosystem-brightgreen)](https://ecosystem.supervisely.com/apps/supervisely-ecosystem/synthetic-videos-for-tracking)
+[![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervisely.com/slack)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/supervisely-ecosystem/FairMOT)
-[![views](https://app.supervise.ly/img/badges/views/supervisely-ecosystem/fairmot/supervisely/visualize.png)](https://supervise.ly)
-[![runs](https://app.supervise.ly/img/badges/runs/supervisely-ecosystem/fairmot/supervisely/visualize.png)](https://supervise.ly)
+[![views](https://app.supervisely.com/img/badges/views/supervisely-ecosystem/fairmot/supervisely/visualize.png)](https://supervisely.com)
+[![runs](https://app.supervisely.com/img/badges/runs/supervisely-ecosystem/fairmot/supervisely/visualize.png)](https://supervisely.com)
 
 </div>
 
@@ -31,13 +31,13 @@ Application key points:
 
 # How to Use
 
-1. Train your model using [Train FairMOT](https://ecosystem.supervise.ly/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Ftrain).  
-After the end of the train, you get a folder with checkpoints available in [Supervisely Files](https://app.supervise.ly/files/) by `/FairMOT/train/{experiment_name}/checkpoints` path.
+1. Train your model using [Train FairMOT](https://ecosystem.supervisely.com/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Ftrain).  
+After the end of the train, you get a folder with checkpoints available in [Supervisely Files](https://app.supervisely.com/files/) by `/FairMOT/train/{experiment_name}/checkpoints` path.
 
 <img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/supervisely/train" src="https://imgur.com/Mk1gpGJ.png" width="350px" style='padding-bottom: 10px'/>
 
 
-2. Add [Visualize FairMOT](https://ecosystem.supervise.ly/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Fvisualize) from ecosystem to your team  
+2. Add [Visualize FairMOT](https://ecosystem.supervisely.com/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Fvisualize) from ecosystem to your team  
 
 <img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/supervisely/visualize" src="https://imgur.com/Ni9d1DE.png" width="350px" style='padding-bottom: 10px'/>
 
