@@ -11,10 +11,10 @@
     <a href="#For-Developers">For Developers</a>
 </p>
 
-[![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervise.ly/slack)
+[![](https://img.shields.io/badge/slack-chat-green.svg?logo=slack)](https://supervisely.com/slack)
 ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/supervisely-ecosystem/FairMOT)
-[![views](https://app.supervise.ly/img/badges/views/supervisely-ecosystem/fairmot/supervisely/serve.png)](https://supervise.ly)
-[![runs](https://app.supervise.ly/img/badges/runs/supervisely-ecosystem/fairmot/supervisely/serve.png)](https://supervise.ly)
+[![views](https://app.supervisely.com/img/badges/views/supervisely-ecosystem/fairmot/supervisely/serve.png)](https://supervisely.com)
+[![runs](https://app.supervisely.com/img/badges/runs/supervisely-ecosystem/fairmot/supervisely/serve.png)](https://supervisely.com)
 
 </div>
 
@@ -31,17 +31,17 @@ Application key points:
 
 # How to Use
 
-1. Train your model using [Train FairMOT APP](https://ecosystem.supervise.ly/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Ftrain).  
-After the end of the train, you get a folder with checkpoints available in [Supervisely Files](https://app.supervise.ly/files/) by `/FairMOT/train/{experiment_name}/checkpoints` path.
+1. Train your model using [Train FairMOT APP](https://ecosystem.supervisely.com/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Ftrain).  
+After the end of the train, you get a folder with checkpoints available in [Supervisely Files](https://app.supervisely.com/files/) by `/FairMOT/train/{experiment_name}/checkpoints` path.
 
 <img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/supervisely/train" src="https://imgur.com/Mk1gpGJ.png" width="350px" style='padding-bottom: 10px'/>
 
 
-2. Add [Serve FairMOT](https://ecosystem.supervise.ly/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Fserve) from ecosystem to your team  
+2. Add [Serve FairMOT](https://ecosystem.supervisely.com/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Fserve) from ecosystem to your team  
 
 <img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/supervisely/serve" src="https://imgur.com/ksDJmF0.png" width="350px" style='padding-bottom: 10px'/>
 
-3. Open checkpoints dir `/FairMOT/train/{experiment_name}/checkpoints` in [Supervisely Files](https://app.supervise.ly/files/) and **Run Application**.  
+3. Open checkpoints dir `/FairMOT/train/{experiment_name}/checkpoints` in [Supervisely Files](https://app.supervisely.com/files/) and **Run Application**.  
 <img src="https://imgur.com/fKOoOvg.png" width="80%" style='padding-top: 10px'>  
 
 4. The model has been successfully deployed  
