@@ -31,13 +31,13 @@ Application key points:
 
 # How to Use
 
-1. Train your model using [Train FairMOT APP](../../../../supervisely-ecosystem/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Ftrain).  
+1. Train your model using [Train FairMOT APP](https://ecosystem.supervisely.com/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Ftrain).  
 After the end of the train, you get a folder with checkpoints available in [Supervisely Files](https://app.supervisely.com/files/) by `/FairMOT/train/{experiment_name}/checkpoints` path.
 
 <img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/supervisely/train" src="https://imgur.com/Mk1gpGJ.png" width="350px" style='padding-bottom: 10px'/>
 
 
-2. Add [Serve FairMOT](../../../../supervisely-ecosystem/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Fserve) from ecosystem to your team  
+2. Add [Serve FairMOT](https://ecosystem.supervisely.com/apps/supervisely-ecosystem%252Ffairmot%252Fsupervisely%252Fserve) from ecosystem to your team  
 
 <img data-key="sly-module-link" data-module-slug="supervisely-ecosystem/FairMOT/supervisely/serve" src="https://imgur.com/ksDJmF0.png" width="350px" style='padding-bottom: 10px'/>
 
